@@ -20,14 +20,17 @@ import pickle
 import DeepCoNN
 
 tf.flags.DEFINE_string("word2vec", "../data/google.bin", "Word2vec file with pre-trained embeddings (default: None)")
-tf.flags.DEFINE_string("valid_data","../data/music/music.valid", " Data for validation")
+
+# Was music.valid
+tf.flags.DEFINE_string("valid_data","../data/music/music.test", " Data for validation")
 tf.flags.DEFINE_string("para_data", "../data/music/music.para", "Data parameters")
 tf.flags.DEFINE_string("train_data", "../data/music/music.train", "Data for training")
 
 # ==================================================
 
 # Model Hyperparameters
-#tf.flags.DEFINE_string("word2vec", "./data/rt-polaritydata/google.bin", "Word2vec file with pre-trained embeddings (default: None)")
+# tf.flags.DEFINE_string("word2vec", "./data/rt-polaritydata/google.bin", "Word2vec file with pre-trained embeddings (default: None)")
+# tf.flags.DEFINE_string("word2vec", None, "Word2vec file with pre-trained embeddings (default: None)")
 tf.flags.DEFINE_integer("embedding_dim", 300, "Dimensionality of character embedding ")
 tf.flags.DEFINE_string("filter_sizes", "3", "Comma-separated filter sizes ")
 tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
@@ -61,7 +64,7 @@ def train_step(u_batch, i_batch, uid, iid, y_batch, batch_num):
         feed_dict)
     time_str = datetime.datetime.now().isoformat()
 
-    # print("{}: step {}, loss {:g}, rmse {:g},mae {:g}".format(time_str, batch_num, loss, accuracy, mae))
+    print("{}: step {}, loss {:g}, rmse {:g},mae {:g}".format(time_str, batch_num, loss, accuracy, mae))
     return accuracy, mae
 
 
@@ -82,7 +85,7 @@ def dev_step(u_batch, i_batch, uid, iid, y_batch, writer=None):
         [global_step, deep.loss, deep.accuracy, deep.mae],
         feed_dict)
     time_str = datetime.datetime.now().isoformat()
-    # print("{}: step{}, loss {:g}, rmse {:g},mae {:g}".format(time_str, step, loss, accuracy, mae))
+    print("{}: step{}, loss {:g}, rmse {:g},mae {:g}".format(time_str, step, loss, accuracy, mae))
 
     return [loss, accuracy, mae]
 

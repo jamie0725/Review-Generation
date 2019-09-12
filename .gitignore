@@ -3,3 +3,5 @@
 __pycache__
 .ipynb_checkpoints
 /DeepCoNN/env/
+/DeepCoNN/data/
+/DeepCoNN/.idea/
