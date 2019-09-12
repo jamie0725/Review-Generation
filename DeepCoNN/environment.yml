@@ -1,0 +1,9 @@
+name: deepconn
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - python=2.7
+  - pandas
+  - pip:
+    - tensorflow==0.12.1
