@@ -329,6 +329,9 @@ if __name__ == '__main__':
                 if best_mae > mae:
                     best_mae = mae
                 print("")
+
+            saver = tf.train.Saver()
+            saver.save(sess, 'my_deepconn_model')
             print 'best rmse:', best_rmse
             print 'best mae:', best_mae
 
