@@ -1,0 +1,2 @@
+test parameters:Namespace(K=5, batch_size=50, concat=1, drop_out_rate=0.7, epoch=50, global_dimension=8, input_data_type='data/der_data/auto', item_review_combine='add', item_review_combine_c=0.5, learning_rate=0.001, lmd=1.0, log_conf_path='conf/logging.conf', logger=<logging.RootLogger object at 0x10ea96150>, merge='FM', mode='test', output_path='results', reg=1.0, root_path='/Users/chenxu/Research/Project/recommendation/dynamic_explainable', word_dimension=64)
+test result:
