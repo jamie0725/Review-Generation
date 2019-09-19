@@ -165,7 +165,7 @@ class DataLoader():
 
             reviews = [self.user_item_review_dict[list_line[0]+'@'+str(j)] for j in items]
             reviews = list(itertools.chain.from_iterable(reviews))
-            reviews = [i.tolist() for i in reviews]
+            # reviews = [i.tolist() for i in reviews]
             paded_reviews, length = self._pad_sequence([0.0]*64, self.max_interaction_length, reviews)
 
             times = [int(i.split('||')[3]) for i in list_line[1].split('()')]
