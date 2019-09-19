@@ -41,13 +41,6 @@ id_user_dict = dict(zip(range(len(users)), users))
 id_item_dict = dict(zip(range(len(items)), items))
 id_word_dict = dict(zip(range(len(vocab)), vocab))
 word_id_dict = dict(zip(vocab,range(len(vocab))))
-with open('id_user_dict', 'wb') as f:
-    pickle.dump(id_user_dict, f)
-with open('id_item_dict', 'wb') as f:
-    pickle.dump(id_item_dict, f)
-with open('id_word_dict', 'wb') as f:
-    pickle.dump(id_word_dict, f)
-
 
 # In[3]:
 
@@ -64,6 +57,10 @@ def get_key_by_value(value,D):
     id = list(D.values()).index(value)
     return list(D.keys())[id]
 
+def review2id(review):
+    review_text = re.sub(r'[^\w\s]|\d','',review['reviewText'].lower())
+    sentence_ids = [word_id_dict[word] for word in review_text.split()]
+    return np.array(sentence_ids)
 
 # In[5]:
 
@@ -80,6 +77,8 @@ user_purchased_items
     Value: list of purchasedID
 """
 item_real_reviews = defaultdict(list)
+item_reviews = defaultdict(list)
+user_item_real_review = defaultdict(list)
 user_item_review = defaultdict(list)
 user_purchased_items = defaultdict(list)
 for line in raw_data:
@@ -91,36 +90,25 @@ for line in raw_data:
     UserID = get_key_by_value(line['reviewerID'], id_user_dict)
     ItemID = get_key_by_value(line['asin'], id_item_dict)
     item_real_reviews[ItemID].append(line)
+    item_reviews[ItemID].append(review2id(line))
     UserItem = '{}@{}'.format(UserID,ItemID)
-    user_item_review[UserItem].append(line)
+    user_item_review[UserItem].append(review2id(line))
+    user_item_real_review[UserItem].append(line)
     user_purchased_items[UserID].append(ItemID)
-with open('item_real_reviews', 'wb') as f:
-    pickle.dump(item_real_reviews, f)
-with open('item_reviews', 'wb') as f:
-    pickle.dump(item_real_reviews, f)
-with open('user_item_review', 'wb') as f:
-    pickle.dump(user_item_review, f)
-with open('train_user_purchased_items', 'wb') as f:
-    pickle.dump(user_purchased_items, f)    
-with open('validation_user_purchased_items', 'wb') as f:
-    pickle.dump(user_purchased_items, f)        
-with open('test_user_purchased_items', 'wb') as f:
-    pickle.dump(user_purchased_items, f)        
+      
 
 
 # In[6]:
-
 
 def parseStr(review):
     ItemID = get_key_by_value(review['asin'], id_item_dict)
     rating = review['overall']
     time = review['unixReviewTime']
-    word_ids = []
     review_text = re.sub(r'[^\w\s]|\d','',review['reviewText'].lower())
-    for word in review_text.split():
-        word_id = word_id_dict[word]
-        word_ids.append(str(word_id)) 
-    return '{}||{:1}||'.format(ItemID,rating)+'::'.join(word_ids)+"||{}".format(time)
+    text_ids = [str(word_id_dict[word]) for word in review_text.split()]
+    if len(text_ids) == 0:
+        text_ids =['0','0']
+    return '{}||{:1}||'.format(ItemID,rating)+'::'.join(text_ids)+"||{}".format(time)
 
 train = []
 validation = []
@@ -132,7 +120,7 @@ for UserID in range(len(id_user_dict)):
     reviews = []
     for ItemID in items:
         UserItem = '{}@{}'.format(UserID,ItemID)
-        reviews.append(user_item_review[UserItem][0])
+        reviews.append(user_item_real_review[UserItem][0])
     reviews_sorted = sorted(reviews, key=lambda k: k['unixReviewTime']) 
     for i in range(2,len(reviews_sorted)):
         target_review = reviews_sorted[i]
@@ -145,13 +133,31 @@ for UserID in range(len(id_user_dict)):
             test.append(row)
         elif i == len(reviews_sorted) - 1:
             validation.append(row)
-print('Done!')
 
 
 # In[7]:
 
-
+print('Saving Outputs...')
 # Save output
+
+with open('id_user_dict', 'wb') as f:
+    pickle.dump(id_user_dict, f)
+with open('id_item_dict', 'wb') as f:
+    pickle.dump(id_item_dict, f)
+with open('id_word_dict', 'wb') as f:
+    pickle.dump(id_word_dict, f)
+with open('item_real_reviews', 'wb') as f:
+    pickle.dump(item_real_reviews, f)
+with open('item_reviews', 'wb') as f:
+    pickle.dump(item_reviews, f)
+with open('user_item_review', 'wb') as f:
+    pickle.dump(user_item_review, f)
+with open('train_user_purchased_items', 'wb') as f:
+    pickle.dump(user_purchased_items, f)    
+with open('validation_user_purchased_items', 'wb') as f:
+    pickle.dump(user_purchased_items, f)        
+with open('test_user_purchased_items', 'wb') as f:
+    pickle.dump(user_purchased_items, f)  
 with open('train_ided_whole_data', 'w') as out_file:
     out_file.write('\n'.join(train))
 with open('validation_ided_whole_data', 'w') as out_file:
@@ -160,11 +166,6 @@ with open('test_ided_whole_data', 'w') as out_file:
     out_file.write('\n'.join(test))
 with open('train_validation_ided_whole_data', 'w') as out_file:
     out_file.write('\n'.join(train+validation)) 
-
-
-# In[9]:
-
-
 data_statistics = {
     'max_interaction_length': max_interaction_length,
     'interaction_num': len(raw_data),
@@ -190,3 +191,7 @@ with open('tf_embeddings_tensor.tsv', 'r') as f:
     embedding = np.loadtxt(f, delimiter='\t')
 with open('word_emb.pkl', 'wb') as f:
     pickle.dump(embedding, f)    
+
+
+print('Done!')
+
