@@ -6,7 +6,11 @@ import csv
 import pickle
 import re
 import numpy as np
+
 from collections import defaultdict
+from gensim.models import Word2Vec
+from gensim.scripts import word2vec2tensor
+
 filename_input = 'reviews_Automotive_5.json'
 # Load the raw data
 raw_data = [json.loads(line) for line in open(filename_input, 'r')]
@@ -19,12 +23,14 @@ raw_data = [json.loads(line) for line in open(filename_input, 'r')]
 users = set()
 items = set()
 vocab = set()
+full_raw_text = []
 max_interaction_length = 0
 for line in raw_data:
     UserID = line['reviewerID']
     ItemID = line['asin']
     sentence = re.sub(r'[^\w\s]|\d','',line['reviewText'].lower())
     words = [word for word in  sentence.split()]
+    full_raw_text.append(words)
     if len(words) > max_interaction_length:
         max_interaction_length = len(words)
     users.add(UserID)
@@ -77,6 +83,10 @@ item_real_reviews = defaultdict(list)
 user_item_review = defaultdict(list)
 user_purchased_items = defaultdict(list)
 for line in raw_data:
+    sentence = re.sub(r'[^\w\s]|\d','',line['reviewText'].lower())
+    words = [word for word in  sentence.split()]
+    if len(words) == 0:
+        continue
     # Turn the original ID into the index in the dictionary
     UserID = get_key_by_value(line['reviewerID'], id_user_dict)
     ItemID = get_key_by_value(line['asin'], id_item_dict)
@@ -170,7 +180,13 @@ with open('data_statistics', 'wb') as f:
 
 
 # In[ ]:
+model = Word2Vec(full_raw_text, size=64, window=5, min_count=1, workers=4)
+word_vectors = model.wv
+word_vectors.save_word2vec_format('embeddings.vec')
 
+word2vec2tensor.word2vec2tensor('embeddings.vec', 'tf_embeddings', binary=True)
 
-
-
+with open('tf_embeddings_tensor.tsv', 'r') as f:
+    embedding = np.loadtxt(f, delimiter='\t')
+with open('word_emb.pkl', 'wb') as f:
+    pickle.dump(embedding, f)    
