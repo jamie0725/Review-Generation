@@ -165,7 +165,7 @@ class DataLoader():
 
             reviews = [self.user_item_review_dict[list_line[0]+'@'+str(j)] for j in items]
             reviews = list(itertools.chain.from_iterable(reviews))
-            # reviews = [i.tolist() for i in reviews]
+            reviews = [i.tolist() for i in reviews]
             paded_reviews, length = self._pad_sequence([0.0]*64, self.max_interaction_length, reviews)
 
             times = [int(i.split('||')[3]) for i in list_line[1].split('()')]
@@ -186,29 +186,29 @@ class DataLoader():
 
             c_input_reviews, input_length = self._pad_sequence([0]*self.max_sentence_word_length, self.max_sentence_length, c_input_reviews)
             c_input_reviews_users, input_length_users = self._pad_sequence(0, self.max_sentence_length, c_input_reviews_users)
+            
+            # print len(c_input_reviews)
+            # print len(c_input_reviews[0])
+            # print len(c_input_reviews[0][0])
 
-            #print len(c_input_reviews)
-            #print len(c_input_reviews[0])
-            #print len(c_input_reviews[0][0])
-
-            #print list
-            #print user
-            #print paded_items
-            #print paded_ratings
-            #print paded_reviews
-            #print paded_times
-            #print length
-            #print c_item
-            #print c_rating
-            #print c_input_reviews[0]
-            #print c_input_reviews[0][0]
-            #print input_length
-            #print c_output_review
-            #print c_input_reviews
-            #print c_input_reviews_users
-            #print len(c_input_reviews)
-            #print len(c_input_reviews_users)
-            #raw_input()
+            # print list
+            # print user
+            # print paded_items
+            # print paded_ratings
+            # print paded_reviews
+            # print paded_times
+            # print length
+            # print c_item
+            # print c_rating
+            # print c_input_reviews[0]
+            # print c_input_reviews[0][0]
+            # print input_length
+            # print c_output_review
+            # print c_input_reviews
+            # print c_input_reviews_users
+            # print len(c_input_reviews)
+            # print len(c_input_reviews_users)
+            # raw_input()
 
             eval('self.' + mode + '_users').append(user)
             eval('self.' + mode + '_previous_items').append(paded_items)
@@ -269,8 +269,6 @@ class DataLoader():
         batch_current_output_review = eval('self.' + mode + '_current_output_review')[start:end]
         batch_current_input_reviews_length = eval('self.' + mode + '_current_input_reviews_length')[start:end]
 
-
         return batch_users, batch_previous_items, batch_previous_times, batch_previous_reviews, \
                batch_previous_ratings, batch_previous_lengths, batch_current_items, batch_current_ratings, \
                batch_current_input_reviews, batch_current_input_reviews_users, batch_current_output_review, batch_current_input_reviews_length
-
