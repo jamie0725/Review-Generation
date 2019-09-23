@@ -233,12 +233,15 @@ if __name__ == '__main__':
             data_size_test = len(test_data)
             batch_size = 100
             ll = int(len(train_data) / batch_size)
+            print(ll)
 
             for epoch in range(40):
+                print("Epoch: ", epoch)
                 # Shuffle the data at each epoch
                 shuffle_indices = np.random.permutation(np.arange(data_size_train))
                 shuffled_data = train_data[shuffle_indices]
                 for batch_num in range(ll):
+                    # print("Batch: " + str(batch_num) + "/" + str(ll))
                     start_index = batch_num * batch_size
                     end_index = min((batch_num + 1) * batch_size, data_size_train)
                     data_train = shuffled_data[start_index:end_index]
@@ -293,6 +296,8 @@ if __name__ == '__main__':
                 print str(epoch) + ':\n'
                 print("\nEvaluation:")
                 print "train:rmse,mae:", train_rmse / ll, train_mae / ll
+
+
                 train_rmse = 0
                 train_mae = 0
 
@@ -330,8 +335,10 @@ if __name__ == '__main__':
                     best_mae = mae
                 print("")
 
+
+
             saver = tf.train.Saver()
-            saver.save(sess, 'my_deepconn_model')
+            saver.save(sess, 'my_deepconn_model_full')
             print 'best rmse:', best_rmse
             print 'best mae:', best_mae
 
