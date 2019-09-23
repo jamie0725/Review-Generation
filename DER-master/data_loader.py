@@ -177,16 +177,19 @@ class DataLoader():
                 self.global_rating += c_rating
             c_output_review = [int(j) for j in list_line[2].split('||')[2].split('::')]
             c_input_reviews = [i[2] for i in self.item_reviews_dict[str(c_item)] if i[0] != list_line[0]]
+            print(np.shape(c_input_reviews))
             c_input_reviews_users = [i[0] for i in self.item_reviews_dict[str(c_item)] if i[0] != list_line[0]]
             tim = [len(i) for i in c_input_reviews]
             c_input_reviews_users = [[int(c_input_reviews_users[i])]*tim[i] for i in range(len(c_input_reviews_users))]
             c_input_reviews = list(itertools.chain.from_iterable(c_input_reviews))
+            print(np.shape(c_input_reviews))
             c_input_reviews_users = list(itertools.chain.from_iterable(c_input_reviews_users))
             c_input_reviews = [self._pad_sequence(0, self.max_sentence_word_length, i)[0] for i in c_input_reviews]
-
+            print(np.shape(c_input_reviews))
             c_input_reviews, input_length = self._pad_sequence([0]*self.max_sentence_word_length, self.max_sentence_length, c_input_reviews)
             c_input_reviews_users, input_length_users = self._pad_sequence(0, self.max_sentence_length, c_input_reviews_users)
-            
+            print(np.shape(c_input_reviews))
+            raw_input()
             # print len(c_input_reviews)
             # print len(c_input_reviews[0])
             # print len(c_input_reviews[0][0])

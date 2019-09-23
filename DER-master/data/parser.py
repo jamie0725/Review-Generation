@@ -13,7 +13,7 @@ from gensim.scripts import word2vec2tensor
 filename_input = 'reviews_Musical_Instruments_5.json'
 # Load the raw data
 raw_data = [json.loads(line) for line in open(filename_input, 'r')]
-
+rec =  re.compile('[^\w\s]|\d')
 # In[2]:
 
 
@@ -26,7 +26,7 @@ max_interaction_length = 1
 for line in raw_data:
     UserID = line['reviewerID']
     ItemID = line['asin']
-    sentence = re.sub(r'[^\w\s]|\d','',line['reviewText'].lower())
+    sentence = rec.sub(r' ',line['reviewText'].lower())
     words = [word for word in  sentence.split()]
     full_raw_text.append(words)
     if len(words) > max_interaction_length:
@@ -54,7 +54,6 @@ print('length of id_word_dict={}'.format(len(id_word_dict)))
 # In[4]:
 def _pad_sequence(mask_value, max_length, input_sequence):
         real_length = len(input_sequence)
-        print(real_length)
         if real_length < max_length:
             output_sequence = input_sequence + [mask_value] * (max_length - real_length)
             length = real_length
@@ -68,14 +67,10 @@ def get_key_by_value(value,D):
     return list(D.keys())[id]
 
 def review2id(review):
-    review_text = re.sub(r'[^\w\s]|\d','',review['reviewText'].lower())
+    review_text = rec.sub(r' ',review['reviewText'].lower())
     sentence_ids = [word_id_dict[word] for word in review_text.split()]
+    sentence_ids = _pad_sequence(0,64,sentence_ids)[0]
     return sentence_ids
-
-def review2vector(review):
-    review_text = re.sub(r'[^\w\s]|\d','',review['reviewText'].lower())
-    sentence_vectors = np.array([model.wv[word] for word in review_text.split()])
-    return sentence_vectors
 
 # In[5]:
 
@@ -97,7 +92,8 @@ user_item_raw = defaultdict(list)
 user_item_review = defaultdict(list)
 user_purchased_items = defaultdict(list)
 for line in raw_data:
-    sentence = re.sub(r'[^\w\s]|\d','',line['reviewText'].lower())
+    real_review = line['reviewText']
+    sentence = rec.sub(r' ',real_review.lower())
     words = [word for word in  sentence.split()]
     if len(words) == 0:
         continue
@@ -105,13 +101,12 @@ for line in raw_data:
     UserID = get_key_by_value(line['reviewerID'], id_user_dict)
     ItemID = get_key_by_value(line['asin'], id_item_dict)
     Rating = line['overall']
-    Real_Review = re.sub(r'[^\w\s]|\d','',line['reviewText'].lower()).split()
     Review = review2id(line)
 
-    item_real_reviews[str(ItemID)].append([UserID,Real_Review])
+    item_real_reviews[str(ItemID)].append([UserID,real_review])
     item_reviews[str(ItemID)].append([UserID,Rating,[Review]])
     UserItem = '{}@{}'.format(UserID,ItemID)
-    user_item_review[UserItem]=review2vector(line)
+    user_item_review[UserItem]=np.array([review2id(line)])
     user_item_raw[UserItem]=line
     user_purchased_items[UserID].append(ItemID)
       
@@ -122,7 +117,7 @@ def parseStr(review):
     ItemID = get_key_by_value(review['asin'], id_item_dict)
     rating = review['overall']
     time = review['unixReviewTime']
-    review_text = re.sub(r'[^\w\s]|\d','',review['reviewText'].lower())
+    review_text = rec.sub(r' ',review['reviewText'].lower())
     text_ids = [str(word_id_dict[word]) for word in review_text.split()]
     return '{}||{:1}||'.format(ItemID,rating)+'::'.join(text_ids)+"||{}".format(time)
 
@@ -153,7 +148,7 @@ for UserID in range(len(id_user_dict)):
 
 # In[7]:
 
-print('Saving Outputs...')
+print('Saving Outputs 1/5')
 # Save output
 
 with open('id_user_dict', 'wb') as f:
@@ -162,12 +157,18 @@ with open('id_item_dict', 'wb') as f:
     pickle.dump(id_item_dict, f)
 with open('id_word_dict', 'wb') as f:
     pickle.dump(id_word_dict, f)
+
+print('Saving Outputs 2/5')
+
 with open('item_real_reviews', 'wb') as f:
     pickle.dump(item_real_reviews, f)
 with open('item_reviews', 'wb') as f:
     pickle.dump(item_reviews, f)
 with open('user_item_review', 'wb') as f:
     pickle.dump(user_item_review, f)
+
+print('Saving Outputs 3/5')
+
 with open('train_user_purchased_items', 'wb') as f:
     pickle.dump(user_purchased_items, f)    
 with open('validation_user_purchased_items', 'wb') as f:
@@ -182,6 +183,8 @@ with open('test_ided_whole_data', 'w') as out_file:
     out_file.write('\n'.join(test))
 with open('train_validation_ided_whole_data', 'w') as out_file:
     out_file.write('\n'.join(train+validation)) 
+
+
 data_statistics = {
     'max_interaction_length': 2,
     'interaction_num': len(raw_data),
@@ -192,12 +195,14 @@ data_statistics = {
     'item_num': len(id_item_dict),
     'word_num': len(id_word_dict)
 }
+print('Saving Outputs 4/5')
 with open('data_statistics', 'wb') as f:
     pickle.dump(data_statistics, f)
 
 
 # In[ ]:
 
+print('Saving Outputs 5/5')
 
 with open('tf_embeddings_tensor.tsv', 'r') as f:
     embedding = np.loadtxt(f, delimiter='\t')
