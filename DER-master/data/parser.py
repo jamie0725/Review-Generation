@@ -10,14 +10,15 @@ import itertools
 from collections import defaultdict
 from gensim.models import Word2Vec
 from gensim.scripts import word2vec2tensor
+import logging
 filename_input = 'reviews_Musical_Instruments_5.json'
 # filename_input = 'reviews_Toys_and_Games_5.json'
+# filename_input = 'reviews_Automotive_5.json'
 # Load the raw data
 raw_data = [json.loads(line) for line in open(filename_input, 'r')]
 raw_data = [review for review in raw_data if len(review['reviewText'])>0]
 rec =  re.compile('[^\w\s]|\d')
 # In[2]:
-
 print('Preparing vocabulary...')
 # Generate id_user_dict/id_item_dict/id_word_dict
 users = set()
