@@ -11,12 +11,14 @@ from collections import defaultdict
 from gensim.models import Word2Vec
 from gensim.scripts import word2vec2tensor
 filename_input = 'reviews_Musical_Instruments_5.json'
+# filename_input = 'reviews_Toys_and_Games_5.json'
 # Load the raw data
 raw_data = [json.loads(line) for line in open(filename_input, 'r')]
+raw_data = [review for review in raw_data if len(review['reviewText'])>0]
 rec =  re.compile('[^\w\s]|\d')
 # In[2]:
 
-
+print('Preparing vocabulary...')
 # Generate id_user_dict/id_item_dict/id_word_dict
 users = set()
 items = set()
@@ -29,8 +31,6 @@ for line in raw_data:
     sentence = rec.sub(r' ',line['reviewText'].lower())
     words = [word for word in  sentence.split()]
     full_raw_text.append(words)
-    if len(words) > max_interaction_length:
-        max_interaction_length = len(words)
     users.add(UserID)
     items.add(ItemID)
     for word in words:
@@ -50,6 +50,7 @@ print('length of id_user_dict={}'.format(len(id_user_dict)))
 print('length of id_item_dict={}'.format(len(id_item_dict)))
 print('length of id_word_dict={}'.format(len(id_word_dict)))
 
+print('Preparing dictionary...')
 
 # In[4]:
 def _pad_sequence(mask_value, max_length, input_sequence):
@@ -66,10 +67,12 @@ def get_key_by_value(value,D):
     id = list(D.values()).index(value)
     return list(D.keys())[id]
 
-def review2id(review):
-    review_text = rec.sub(r' ',review['reviewText'].lower())
-    sentence_ids = [word_id_dict[word] for word in review_text.split()]
-    sentence_ids = _pad_sequence(0,64,sentence_ids)[0]
+def Process_review(Real_review):
+    sentences = [rec.sub(r' ',sentence) for sentence in Real_review]
+    return [sentence2id(sentence) for sentence in sentences]
+
+def sentence2id(sentence):
+    sentence_ids = [word_id_dict[word] for word in sentence.split()]
     return sentence_ids
 
 # In[5]:
@@ -92,21 +95,17 @@ user_item_raw = defaultdict(list)
 user_item_review = defaultdict(list)
 user_purchased_items = defaultdict(list)
 for line in raw_data:
-    real_review = line['reviewText']
-    sentence = rec.sub(r' ',real_review.lower())
-    words = [word for word in  sentence.split()]
-    if len(words) == 0:
-        continue
-    # Turn the original ID into the index in the dictionary
     UserID = get_key_by_value(line['reviewerID'], id_user_dict)
     ItemID = get_key_by_value(line['asin'], id_item_dict)
     Rating = line['overall']
-    Review = review2id(line)
-
-    item_real_reviews[str(ItemID)].append([UserID,real_review])
-    item_reviews[str(ItemID)].append([UserID,Rating,[Review]])
     UserItem = '{}@{}'.format(UserID,ItemID)
-    user_item_review[UserItem]=np.array([review2id(line)])
+    # Get real reviews
+    Real_review = [sentence for sentence in line['reviewText'].lower().split('.') if len(sentence)>0]
+    item_real_reviews[str(ItemID)].append([UserID,Real_review])
+    # Process real review
+    Review = Process_review(Real_review)
+    item_reviews[str(ItemID)].append([UserID,Rating,Review])
+    user_item_review[UserItem]=np.zeros([1,64])
     user_item_raw[UserItem]=line
     user_purchased_items[UserID].append(ItemID)
       
@@ -121,6 +120,7 @@ def parseStr(review):
     text_ids = [str(word_id_dict[word]) for word in review_text.split()]
     return '{}||{:1}||'.format(ItemID,rating)+'::'.join(text_ids)+"||{}".format(time)
 
+print('Preparing training data...')
 train = []
 validation = []
 test = []
