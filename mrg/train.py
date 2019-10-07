@@ -92,6 +92,8 @@ def main(_):
   log_file = open('log.txt', 'w')
   test_step = 0
 
+  saver = tf.compat.v1.train.Saver()
+
   config = tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
   config.gpu_options.allow_growth = True
   with tf.Session(config=config) as sess:
@@ -123,6 +125,8 @@ def main(_):
         if _step % FLAGS.display_step == 0:
           data_reader.iter.set_postfix(rating_loss=(sum_rating_loss / count),
                                        review_loss=(sum_review_loss / count))
+
+      save_path = saver.save(sess, f"tmp/model{epoch}.ckpt")                                        
 
       # Testing
       review_gen_corpus = defaultdict(list)
