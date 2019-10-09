@@ -1,0 +1,12 @@
+numpy
+futures
+pyhocon
+jsonpickle
+fabric==1.14.1
+faulthandler
+line_profiler
+GitPython
+tensorboard_logger
+prettytable
+torch==0.3.1
+nltk==3.2.5
