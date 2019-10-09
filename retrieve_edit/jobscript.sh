@@ -20,13 +20,16 @@ virtualenv env -p `which python2`
 source env/bin/activate
 
 git clone --single-branch --branch retrieve_edit https://github.com/s2948044/Review-Generation.git
-cd retrieve_edit
+cd Review-Generation/retrieve_edit
 pip install -r requirements.txt
 
-wget https://worksheets.codalab.org/rest/bundles/0xfa69890526c04899a1eb286afb17d37a/contents/blob/
-tar datasets.tar.gz
-wget https://worksheets.codalab.org/rest/bundles/0x512544e3af5c4a738dd6e57e02d0e4ba/contents/blob/
-tar -zxvf word_vectors.tar.gz
+wget -O datasets.tar.gz https://worksheets.codalab.org/rest/bundles/0xfa69890526c04899a1eb286afb17d37a/contents/blob/
+mkdir -p datasets
+tar -C datasets -zxvf datasets.tar.gz
+wget -O word_vectors.tar.gz https://worksheets.codalab.org/rest/bundles/0x512544e3af5c4a738dd6e57e02d0e4ba/contents/blob/
+mkdir -p word_vectors
+tar -C word_vectors -zxvf word_vectors.tar.gz
+ls
 export COPY_EDIT_DATA=$(pwd); export PYTHONIOENCODING=utf8; cd cond-editor-codalab; python train_ctx_vae.py
 
 deactivate
