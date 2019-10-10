@@ -26,7 +26,7 @@ class Model:
 
         self.users = tf.placeholder(tf.int32, shape=[None])
         self.items = tf.placeholder(tf.int32, shape=[None])
-        self.prototype = tf.placeholder(tf.int32, shape=[None])
+        self.prototypes = tf.placeholder(tf.int32, shape=[None])
         self.ratings = tf.placeholder(tf.float32, shape=[None])
         self.images = tf.placeholder(tf.float32, shape=[None, self.L, self.D])
         self.reviews = tf.placeholder(tf.int32, shape=[None, None])
@@ -36,7 +36,7 @@ class Model:
 
         self.user_emb = tf.nn.embedding_lookup(self.user_matrix, self.users)
         self.item_emb = tf.nn.embedding_lookup(self.item_matrix, self.items)
-        self.prototype_emb = self.user_emb  # TODO: Now the prototype embedding is set to be the same as the user embedding, please modify with GRU.
+        self.prototype_emb = self._prototype_encoder(self.prototypes)
 
         self.sentiment_features = self._get_features(self.user_emb, self.item_emb, self.prototype_emb)
         self.sentiment_features = self._batch_norm(self.sentiment_features, name='review/sentiment')
@@ -46,6 +46,14 @@ class Model:
         self._build_rating_predictor()
         self._build_review_generator()
         self._build_review_sampler(max_decode_length=self.T)
+ 
+    def _prototype_encoder(self, inputs):
+      with tf.variable_scope('prototype_encoder'):
+        hidden_size = 64
+        gru_cell = tf.contrib.rnn.GRUCell(hidden_size)
+        rnn = tf.keras.layers.RNN(gru_cell, return_sequences=False, return_state=True)
+        outputs = rnn(inputs)
+        return outputs
 
     def _init_embeddings(self):
         self.user_matrix = tf.get_variable(
@@ -150,7 +158,7 @@ class Model:
             w_c_ui = tf.get_variable('w_c_ui', [3 * self.F, self.C], initializer=self.weight_initializer)
             b_c = tf.get_variable('b_c', [self.C], initializer=self.const_initializer)
             c = tf.matmul(user_item_prototype_emb, w_c_ui) + b_c
-            
+
             h = tf.nn.tanh(h)
             c = tf.nn.tanh(c)
             return c, h
@@ -245,5 +253,6 @@ class Model:
             fd[self.images] = images
         if reviews is not None:
             fd[self.reviews] = batch_review_normalize(reviews, self.T)
+            fd[self.prototypes] = batch_review_normalize(reviews, self.T)
 
         return fd

@@ -50,7 +50,7 @@ def check_scope_rating(var_name):
 
 
 def check_scope_review(var_name):
-    for name in ['user', 'item', 'features', 'review']:
+    for name in ['user', 'item', 'features', 'review', 'prototype']:
         if name in var_name:
             return True
     return False
