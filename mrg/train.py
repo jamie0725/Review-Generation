@@ -1,10 +1,13 @@
 from collections import defaultdict
-
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+from tensorflow.python.util import deprecation
+deprecation._PRINT_DEPRECATION_WARNINGS = False
 import tensorflow as tf
 import numpy as np
 
 from model import Model
-from reader import DataReader, get_review_data, batch_review_normalize
+from reader import DataReader, get_review_data, batch_review_normalize, get_prototype_data
 from utils import count_parameters, load_vocabulary, decode_reviews, log_info
 from bleu import compute_bleu
 from rouge import rouge
@@ -108,7 +111,10 @@ def main(_):
             # Training
             for users, items, ratings in data_reader.read_train_set(FLAGS.batch_size, rating_only=True):
                 count += 1
-                fd = model.feed_dict(users=users, items=items, ratings=ratings, is_training=True)
+                prototypes= get_prototype_data(users,items,data_reader.train_user_review,data_reader.train_item_review)
+                print(np.shape(prototypes))
+                input()
+                fd = model.feed_dict(users=users, items=items, prototypes=prototypes, ratings=ratings, is_training=True)
                 _step, _, _rating_loss = sess.run([global_step, update_rating, model.rating_loss], feed_dict=fd)
                 sum_rating_loss += _rating_loss
 
@@ -117,7 +123,7 @@ def main(_):
                 img_idx = [data_reader.train_id2idx[photo_id] for photo_id in photo_ids]
                 images = data_reader.train_img_features[img_idx]
 
-                fd = model.feed_dict(users=review_users, items=review_items, images=images,
+                fd = model.feed_dict(users=review_users, items=review_items, prototypes=prototypes, images=images,
                                      reviews=reviews, is_training=True)
                 _, _review_loss = sess.run([update_review, model.review_loss], feed_dict=fd)
                 sum_review_loss += _review_loss

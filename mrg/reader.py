@@ -39,6 +39,27 @@ def get_review_data(users, items, ratings, review_data):
 
   return new_users, new_items, new_ratings, new_photos, new_reviews
 
+def pad_sequence(mask_value, max_length, input_sequence):
+  real_length = len(input_sequence)
+  if real_length < max_length:
+    output_sequence = input_sequence + [mask_value] * (max_length - real_length)
+    length = real_length
+  else:
+    output_sequence = input_sequence[:max_length]
+    length = max_length
+  return output_sequence
+
+def get_prototype_data(users, items, user_reviews, item_reviews, max_length= 20, max_user_length= 20, max_item_length = 20):
+    batch_size = len(users)
+    prototypes = []
+    for user,item in zip(users,items):
+      padded_user_reviews = [pad_sequence(0, max_length, user_review[1]) for user_review in user_reviews[user]]
+      padded_item_reviews = [pad_sequence(0, max_length, item_review[1]) for item_review in item_reviews[item]]
+      prototype_user = pad_sequence([0]*max_length, max_user_length, padded_user_reviews) # (20,20)
+      prototype_item = pad_sequence([0]*max_length, max_item_length, padded_item_reviews) # (20,20)
+      prototypes.append(prototype_user + prototype_item)                                  # (40,20)
+    prototypes  = np.array(prototypes,dtype=np.int32).reshape(batch_size,-1)
+    return  prototypes                                                                                              
 
 def batch_review_normalize(reviews, max_length=None):
   batch_size = len(reviews)
@@ -67,8 +88,8 @@ class DataReader:
 
     train_data = self._read_data(os.path.join(data_dir, 'train.pkl'))
     test_data = self._read_data(os.path.join(data_dir, 'test.pkl'))
-    self.train_rating, self.train_review = self._prepare_data(train_data, training=True)
-    self.test_rating, self.test_review = self._prepare_data(test_data)
+    self.train_rating, self.train_review, self.train_user_review, self.train_item_review = self._prepare_data(train_data, training=True)
+    self.test_rating, self.test_review, self.test_user_review, self.test_item_review = self._prepare_data(test_data)
 
     self.global_rating = np.asarray(self.train_rating)[:, 2].mean()
     print('Global rating: {:.2f}'.format(self.global_rating))
@@ -168,7 +189,8 @@ class DataReader:
   def _prepare_data(data, training=False):
     rating_data = []
     review_data = defaultdict(list)
-
+    user_review_data = defaultdict(list)
+    item_review_data = defaultdict(list)
     for exp in data:
       user = int(exp['User'])
       item = int(exp['Item'])
@@ -179,7 +201,11 @@ class DataReader:
         if training:
           for photo_review in photo_reviews:
             review_data[(user, item)].append((photo_id, photo_review))
+            user_review_data[user].append((photo_id, photo_review))
+            item_review_data[item].append((photo_id, photo_review))
         else:
           review_data[(user, item)].append((photo_id, photo_reviews))
+          user_review_data[user].append((photo_id, photo_reviews))
+          item_review_data[item].append((photo_id, photo_reviews))
 
-    return rating_data, review_data
+    return rating_data, review_data, user_review_data, item_review_data

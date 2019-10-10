@@ -23,10 +23,11 @@ class Model:
 
         self.weight_initializer = tf.contrib.layers.xavier_initializer()
         self.const_initializer = tf.zeros_initializer()
+        self.pre_trained_emb = load_glove(self.V, self.W)
 
         self.users = tf.compat.v1.placeholder(tf.int32, shape=[None])
         self.items = tf.compat.v1.placeholder(tf.int32, shape=[None])
-        self.prototypes = tf.compat.v1.placeholder(tf.int32, shape=[None])
+        self.prototypes = tf.compat.v1.placeholder(tf.int32, shape=[None,None])
         self.ratings = tf.compat.v1.placeholder(tf.float32, shape=[None])
         self.images = tf.compat.v1.placeholder(tf.float32, shape=[None, self.L, self.D])
         self.reviews = tf.compat.v1.placeholder(tf.int32, shape=[None, None])
@@ -49,11 +50,12 @@ class Model:
  
     def _prototype_encoder(self, inputs):
       with tf.compat.v1.variable_scope('prototype_encoder'):
-        hidden_size = 64
+        hidden_size = 256
+        inputs_emb = tf.nn.embedding_lookup(self.prototype_matrix, inputs)
         gru_cell = tf.keras.layers.GRUCell(hidden_size)
         rnn = tf.keras.layers.RNN(gru_cell, return_sequences=False, return_state=True)
-        outputs = rnn(inputs)
-        return outputs
+        _,state = rnn(inputs_emb)
+        return state
 
     def _init_embeddings(self):
         self.user_matrix = tf.compat.v1.get_variable(
@@ -73,9 +75,18 @@ class Model:
         self.word_matrix = tf.compat.v1.get_variable(
             name='word_matrix',
             shape=[self.V, self.W],
-            initializer=tf.constant_initializer(load_glove(self.V, self.W)),
+            initializer=tf.constant_initializer(self.pre_trained_emb),
             dtype=tf.float32
         )
+
+        self.prototype_matrix = tf.compat.v1.get_variable(
+            name='prototype_matrix',
+            shape=[self.V, self.W],
+            initializer=tf.constant_initializer(self.pre_trained_emb),
+            dtype=tf.float32
+        )
+
+
 
     def _get_features(self, user_emb, item_emb, prototype_emb, num_layers=1):
         with tf.compat.v1.variable_scope('features', reuse=tf.AUTO_REUSE):
@@ -241,10 +252,11 @@ class Model:
             self.alphas = tf.transpose(tf.stack(alpha_list), (1, 0, 2))  # (N, T, L)
             self.betas = tf.transpose(tf.squeeze(tf.stack(beta_list), axis=2), (1, 0))  # (N, T)
 
-    def feed_dict(self, users, items, ratings=None, images=None, reviews=None, is_training=False):
+    def feed_dict(self, users, items, prototypes, ratings=None, images=None, reviews=None, is_training=False):
         fd = {
             self.users: users,
             self.items: items,
+            self.prototypes: prototypes,
             self.is_training: is_training
         }
         if ratings is not None:
@@ -253,6 +265,6 @@ class Model:
             fd[self.images] = images
         if reviews is not None:
             fd[self.reviews] = batch_review_normalize(reviews, self.T)
-            fd[self.prototypes] = batch_review_normalize(reviews, self.T)
+            # fd[self.prototypes] = batch_review_normalize(reviews, self.T)
 
         return fd
