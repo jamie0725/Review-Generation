@@ -143,14 +143,14 @@ class Model:
         with tf.variable_scope('init_lstm'):
             user_item_prototype_emb = tf.concat([self.user_emb, self.item_emb, self.prototype_emb], axis=1)
 
-            w_h_ui = tf.get_variable('w_h_ui', [self.D, self.C], initializer=self.weight_initializer)
+            w_h_ui = tf.get_variable('w_h_ui', [3 * self.F, self.C], initializer=self.weight_initializer)
             b_h = tf.get_variable('b_h', [self.C], initializer=self.const_initializer)
             h = tf.matmul(user_item_prototype_emb, w_h_ui) + b_h
 
-            w_c_ui = tf.get_variable('w_c_ui', [self.D, self.C], initializer=self.weight_initializer)
+            w_c_ui = tf.get_variable('w_c_ui', [3 * self.F, self.C], initializer=self.weight_initializer)
             b_c = tf.get_variable('b_c', [self.C], initializer=self.const_initializer)
             c = tf.matmul(user_item_prototype_emb, w_c_ui) + b_c
-
+            
             h = tf.nn.tanh(h)
             c = tf.nn.tanh(c)
             return c, h
