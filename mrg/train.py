@@ -1,17 +1,18 @@
+from rouge import rouge
+from bleu import compute_bleu
+from utils import count_parameters, load_vocabulary, decode_reviews, log_info
+from reader import DataReader, get_review_data, batch_review_normalize, get_prototype_data
+from model import Model
+import numpy as np
+from tensorflow.core.protobuf import rewriter_config_pb2
+import tensorflow as tf
+from tensorflow.python.util import deprecation
 from collections import defaultdict
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
-from tensorflow.python.util import deprecation
-deprecation._PRINT_DEPRECATION_WARNINGS = False
-import tensorflow as tf
-from tensorflow.core.protobuf import rewriter_config_pb2
-import numpy as np
 
-from model import Model
-from reader import DataReader, get_review_data, batch_review_normalize, get_prototype_data
-from utils import count_parameters, load_vocabulary, decode_reviews, log_info
-from bleu import compute_bleu
-from rouge import rouge
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+deprecation._PRINT_DEPRECATION_WARNINGS = False
+
 
 # Parameters
 # ==================================================
@@ -101,7 +102,7 @@ def main(_):
     config = tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
     config.gpu_options.allow_growth = True
 
-    #Disable arithmetic optimization, which causes AlreadyExistError when collecting gradients
+    # Disable arithmetic optimization, which causes AlreadyExistError when collecting gradients
     off = rewriter_config_pb2.RewriterConfig.OFF
     config.graph_options.rewrite_options.arithmetic_optimization = off
 
