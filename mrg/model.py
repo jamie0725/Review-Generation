@@ -27,7 +27,7 @@ class Model:
 
         self.users = tf.compat.v1.placeholder(tf.int32, shape=[None])
         self.items = tf.compat.v1.placeholder(tf.int32, shape=[None])
-        self.prototypes = tf.compat.v1.placeholder(tf.int32, shape=[None,None])
+        self.prototypes = tf.compat.v1.placeholder(tf.int32, shape=[None, None])
         self.ratings = tf.compat.v1.placeholder(tf.float32, shape=[None])
         self.images = tf.compat.v1.placeholder(tf.float32, shape=[None, self.L, self.D])
         self.reviews = tf.compat.v1.placeholder(tf.int32, shape=[None, None])
@@ -47,15 +47,15 @@ class Model:
         self._build_rating_predictor()
         self._build_review_generator()
         self._build_review_sampler(max_decode_length=self.T)
- 
+
     def _prototype_encoder(self, inputs):
-      with tf.compat.v1.variable_scope('prototype_encoder'):
-        hidden_size = 256
-        inputs_emb = tf.nn.embedding_lookup(self.prototype_matrix, inputs)
-        gru_cell = tf.keras.layers.GRUCell(hidden_size)
-        rnn = tf.keras.layers.RNN(gru_cell, return_sequences=False, return_state=True)
-        _,state = rnn(inputs_emb)
-        return state
+        with tf.compat.v1.variable_scope('prototype_encoder'):
+            hidden_size = self.F
+            inputs_emb = tf.nn.embedding_lookup(self.prototype_matrix, inputs)
+            gru_cell = tf.keras.layers.GRUCell(hidden_size)
+            rnn = tf.keras.layers.RNN(gru_cell, return_sequences=False, return_state=True)
+            _, state = rnn(inputs_emb)
+            return state
 
     def _init_embeddings(self):
         self.user_matrix = tf.compat.v1.get_variable(
@@ -85,8 +85,6 @@ class Model:
             initializer=tf.constant_initializer(self.pre_trained_emb),
             dtype=tf.float32
         )
-
-
 
     def _get_features(self, user_emb, item_emb, prototype_emb, num_layers=1):
         with tf.compat.v1.variable_scope('features', reuse=tf.AUTO_REUSE):
