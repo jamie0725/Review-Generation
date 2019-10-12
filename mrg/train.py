@@ -112,8 +112,6 @@ def main(_):
             for users, items, ratings in data_reader.read_train_set(FLAGS.batch_size, rating_only=True):
                 count += 1
                 prototypes= get_prototype_data(users,items,data_reader.train_user_review,data_reader.train_item_review)
-                print(np.shape(prototypes))
-                input()
                 fd = model.feed_dict(users=users, items=items, prototypes=prototypes, ratings=ratings, is_training=True)
                 _step, _, _rating_loss = sess.run([global_step, update_rating, model.rating_loss], feed_dict=fd)
                 sum_rating_loss += _rating_loss
