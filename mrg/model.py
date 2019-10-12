@@ -250,19 +250,19 @@ class Model:
             self.alphas = tf.transpose(tf.stack(alpha_list), (1, 0, 2))  # (N, T, L)
             self.betas = tf.transpose(tf.squeeze(tf.stack(beta_list), axis=2), (1, 0))  # (N, T)
 
-    def feed_dict(self, users, items, prototypes, ratings=None, images=None, reviews=None, is_training=False):
+    def feed_dict(self, users, items, ratings=None, prototypes=None, images=None, reviews=None, is_training=False):
         fd = {
             self.users: users,
             self.items: items,
-            self.prototypes: prototypes,
             self.is_training: is_training
         }
+        if prototypes is not None:
+            fd[self.prototypes] = prototypes
         if ratings is not None:
             fd[self.ratings] = ratings
         if images is not None:
             fd[self.images] = images
         if reviews is not None:
             fd[self.reviews] = batch_review_normalize(reviews, self.T)
-            # fd[self.prototypes] = batch_review_normalize(reviews, self.T)
 
         return fd

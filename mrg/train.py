@@ -4,6 +4,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow.python.util import deprecation
 deprecation._PRINT_DEPRECATION_WARNINGS = False
 import tensorflow as tf
+from tensorflow.core.protobuf import rewriter_config_pb2
 import numpy as np
 
 from model import Model
@@ -99,6 +100,11 @@ def main(_):
 
     config = tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
     config.gpu_options.allow_growth = True
+
+    #Disable arithmetic optimization, which causes AlreadyExistError when collecting gradients
+    off = rewriter_config_pb2.RewriterConfig.OFF
+    config.graph_options.rewrite_options.arithmetic_optimization = off
+
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
         for epoch in range(1, FLAGS.num_epochs + 1):
@@ -111,9 +117,7 @@ def main(_):
             # Training
             for users, items, ratings in data_reader.read_train_set(FLAGS.batch_size, rating_only=True):
                 count += 1
-                prototypes= get_prototype_data(users,items,data_reader.train_user_review,data_reader.train_item_review)
-                print(np.shape(prototypes))
-                input()
+                prototypes = get_prototype_data(users, items, data_reader.train_user_review, data_reader.train_item_review)
                 fd = model.feed_dict(users=users, items=items, prototypes=prototypes, ratings=ratings, is_training=True)
                 _step, _, _rating_loss = sess.run([global_step, update_rating, model.rating_loss], feed_dict=fd)
                 sum_rating_loss += _rating_loss
@@ -148,7 +152,9 @@ def main(_):
             for users, items, ratings in data_reader.read_test_set(FLAGS.batch_size, rating_only=True):
                 test_step += 1
 
-                fd = model.feed_dict(users, items, ratings)
+                prototypes = get_prototype_data(users, items, data_reader.test_user_review, data_reader.test_item_review, training=False)
+
+                fd = model.feed_dict(users, items, ratings=ratings, prototypes=prototypes)
                 sess.run(model.update_metrics, feed_dict=fd)
 
                 review_users, review_items, review_ratings, photo_ids, reviews = get_review_data(users, items, ratings,
@@ -156,7 +162,9 @@ def main(_):
                 img_idx = [data_reader.test_id2idx[photo_id] for photo_id in photo_ids]
                 images = data_reader.test_img_features[img_idx]
 
-                fd = model.feed_dict(users=review_users, items=review_items, images=images)
+                review_prototypes = get_prototype_data(review_users, review_items, data_reader.test_user_review, data_reader.test_item_review, training=False)
+
+                fd = model.feed_dict(users=review_users, items=review_items, images=images, prototypes=review_prototypes)
                 _reviews, _alphas, _betas = sess.run([model.sampled_reviews, model.alphas, model.betas], feed_dict=fd)
 
                 gen_reviews = decode_reviews(_reviews, vocab)

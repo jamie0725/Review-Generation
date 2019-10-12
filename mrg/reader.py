@@ -51,12 +51,16 @@ def pad_sequence(mask_value, max_length, input_sequence):
     return output_sequence
 
 
-def get_prototype_data(users, items, user_reviews, item_reviews, max_length=20, max_user_length=20, max_item_length=20):
+def get_prototype_data(users, items, user_reviews, item_reviews, max_length=20, max_user_length=20, max_item_length=20, training=True):
     batch_size = len(users)
     prototypes = []
     for user, item in zip(users, items):
-        padded_user_reviews = [pad_sequence(0, max_length, user_review[1]) for user_review in user_reviews[user]]
-        padded_item_reviews = [pad_sequence(0, max_length, item_review[1]) for item_review in item_reviews[item]]
+        if training:
+            padded_user_reviews = [pad_sequence(0, max_length, user_review[1]) for user_review in user_reviews[user]]
+            padded_item_reviews = [pad_sequence(0, max_length, item_review[1]) for item_review in item_reviews[item]]
+        else:
+            padded_user_reviews = [pad_sequence(0, max_length, user_review[1][0]) for user_review in user_reviews[user]]
+            padded_item_reviews = [pad_sequence(0, max_length, item_review[1][0]) for item_review in item_reviews[item]]
         prototype_user = pad_sequence([0]*max_length, max_user_length, padded_user_reviews)  # (20,20)
         prototype_item = pad_sequence([0]*max_length, max_item_length, padded_item_reviews)  # (20,20)
         prototypes.append(prototype_user + prototype_item)                                  # (40,20)
