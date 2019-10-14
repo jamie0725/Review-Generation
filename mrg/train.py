@@ -11,7 +11,7 @@ from rouge import rouge
 
 # Parameters
 # ==================================================
-tf.flags.DEFINE_string("data_dir", "data",
+tf.flags.DEFINE_string("data_dir", "data/Original/",
                        """Path to the data directory""")
 
 tf.flags.DEFINE_float("learning_rate", 3e-4,
