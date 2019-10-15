@@ -61,8 +61,8 @@ class DataReader:
   def __init__(self, data_dir, training_shuffle=True):
     self.data_dir = data_dir
     self.is_shuffle = training_shuffle
-    self.total_users = pickle.load(open( os.path.join(data_dir, 'users.pkl'), "rb" )) + 1 #len(self._read_ids(os.path.join(data_dir, 'users.txt')))
-    self.total_items = pickle.load(open( os.path.join(data_dir, 'items.pkl'), "rb" )) + 1 #len(self._read_ids(os.path.join(data_dir, 'items.txt')))
+    self.total_users = len(self._read_ids(os.path.join(data_dir, 'users.txt')))
+    self.total_items = len(self._read_ids(os.path.join(data_dir, 'items.txt')))
     print('Total users: {}, total items: {}'.format(self.total_users, self.total_items))
 
     train_data = self._read_data(os.path.join(data_dir, 'train.pkl'))
@@ -139,7 +139,6 @@ class DataReader:
     print('Reading image features: %s' % feat_dir)
     all_feats = np.ndarray([num_imgs, 196, 512], dtype=np.float32)
     for file_path in tqdm(glob.glob('{}/*.hkl'.format(feat_dir))):
-      file_path = file_path.replace('\\', '/')
       start = int(file_path.split('/')[-1].split('_')[0])
       end = int(file_path.split('/')[-1].split('_')[1].split('.')[0])
       all_feats[start:end, :] = hickle.load(file_path)

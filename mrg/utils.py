@@ -72,10 +72,7 @@ def load_vocabulary(data_dir):
   print('Reading vocabulary: %s' % vocab_file)
   try:
     with open(vocab_file, 'rb') as f:
-      temp = {idx: word for word, idx in pkl.load(f).items()}
-      print("vocabulary size FML",len(temp))
-      return temp
-      # return {idx: word for word, idx in pkl.load(f).items()}
+      return {idx: word for word, idx in pkl.load(f).items()}
   except IOError:
     pass
 

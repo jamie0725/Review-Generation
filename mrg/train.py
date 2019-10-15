@@ -11,7 +11,7 @@ from rouge import rouge
 
 # Parameters
 # ==================================================
-tf.flags.DEFINE_string("data_dir", "data/Original/",
+tf.flags.DEFINE_string("data_dir", "data",
                        """Path to the data directory""")
 
 tf.flags.DEFINE_float("learning_rate", 3e-4,
@@ -21,9 +21,9 @@ tf.flags.DEFINE_float("dropout_rate", 0.2,
 tf.flags.DEFINE_float("lambda_reg", 1e-4,
                       """Lambda hyper-parameter for regularization (default: 1e-4)""")
 
-tf.flags.DEFINE_integer("num_epochs", 40,
+tf.flags.DEFINE_integer("num_epochs", 20,
                         """Number of training epochs (default: 20)""")
-tf.flags.DEFINE_integer("batch_size", 100,
+tf.flags.DEFINE_integer("batch_size", 64,
                         """Batch size of reviews (default: 64)""")
 tf.flags.DEFINE_integer("num_factors", 256,
                         """Number of latent factors for users/items (default: 256)""")
@@ -92,8 +92,6 @@ def main(_):
   log_file = open('log.txt', 'w')
   test_step = 0
 
-  saver = tf.compat.v1.train.Saver()
-
   config = tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
   config.gpu_options.allow_growth = True
   with tf.Session(config=config) as sess:
@@ -108,6 +106,7 @@ def main(_):
       # Training
       for users, items, ratings in data_reader.read_train_set(FLAGS.batch_size, rating_only=True):
         count += 1
+
         fd = model.feed_dict(users=users, items=items, ratings=ratings, is_training=True)
         _step, _, _rating_loss = sess.run([global_step, update_rating, model.rating_loss], feed_dict=fd)
         sum_rating_loss += _rating_loss
@@ -125,8 +124,6 @@ def main(_):
         if _step % FLAGS.display_step == 0:
           data_reader.iter.set_postfix(rating_loss=(sum_rating_loss / count),
                                        review_loss=(sum_review_loss / count))
-
-      save_path = saver.save(sess, f"tmp/model{epoch}.ckpt")                                        
 
       # Testing
       review_gen_corpus = defaultdict(list)

@@ -133,8 +133,7 @@ class Model:
       w_h = tf.get_variable('w_h', [self.C, 1], initializer=self.weight_initializer)
       b = tf.get_variable('b', [1], initializer=self.const_initializer)
       beta = tf.nn.sigmoid(tf.matmul(x, w_x) + tf.matmul(h, w_h) + b)  # (N, 1)
-      #weighted_features = tf.multiply(beta, s_features) + tf.multiply((1. - beta), v_features)
-      weighted_features = s_features  # ignore visual features
+      weighted_features = tf.multiply(beta, s_features) + tf.multiply((1. - beta), v_features)
       return weighted_features, beta
 
   def _init_lstm(self):
