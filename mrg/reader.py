@@ -53,7 +53,6 @@ def pad_sequence(mask_value, max_length, input_sequence):
 
 
 def get_prototype_data(users, items, user_reviews, item_reviews, max_length=20, max_user_length=20, max_item_length=20):
-    batch_size = len(users)
     prototypes = []
     for user, item in zip(users, items):
         padded_user_reviews = [pad_sequence(
@@ -66,7 +65,7 @@ def get_prototype_data(users, items, user_reviews, item_reviews, max_length=20, 
             [0]*max_length, max_item_length, padded_item_reviews)  # (20,20)
         # (40,20)
         prototypes.append(prototype_user + prototype_item)
-    prototypes = np.array(prototypes, dtype=np.int32).reshape(batch_size, -1)
+    prototypes = np.array(prototypes, dtype=np.int32).reshape(len(users), -1)
     return prototypes
 
 

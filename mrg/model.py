@@ -39,7 +39,7 @@ class Model:
         self.prototype_emb = self._prototype_encoder(self.prototypes)
 
         self.sentiment_features = self._get_features(
-            self.user_emb, self.item_emb)
+            self.user_emb, self.item_emb, self.prototype_emb)
         self.sentiment_features = self._batch_norm(
             self.sentiment_features, name='review/sentiment')
         self.visual_features = self._batch_norm(
@@ -82,21 +82,19 @@ class Model:
             _, state = rnn(inputs_emb)
             return state
 
-    def _get_features(self, user_emb, item_emb, num_layers=1):
-        with tf.variable_scope('features', reuse=tf.AUTO_REUSE):
-            features = tf.concat([user_emb, item_emb], axis=1)
+    def _get_features(self, user_emb, item_emb, prototype_emb, num_layers=1):
+        with tf.compat.v1.variable_scope('features', reuse=tf.AUTO_REUSE):
+            features = tf.concat([user_emb, item_emb, prototype_emb], axis=1)
             for layer in range(num_layers):
-                w = tf.get_variable('w{}'.format(layer), [
-                                    2 * self.F, 2 * self.F], initializer=self.weight_initializer)
-                b = tf.get_variable('b{}'.format(layer), [
-                                    2 * self.F], initializer=self.const_initializer)
+                w = tf.compat.v1.get_variable('w{}'.format(layer), [3 * self.F, 3 * self.F], initializer=self.weight_initializer)
+                b = tf.compat.v1.get_variable('b{}'.format(layer), [3 * self.F], initializer=self.const_initializer)
                 features = tf.matmul(features, w) + b
                 features = tf.nn.tanh(features, 'h{}'.format(layer))
-
             return features
 
+
     def _build_rating_predictor(self):
-        features = self._get_features(self.user_emb, self.item_emb)
+        features = self._get_features(self.user_emb, self.item_emb, self.prototype_emb)
 
         with tf.variable_scope('rating'):
             rating_labels = tf.reshape(self.ratings, [-1, 1])
@@ -167,25 +165,22 @@ class Model:
             b = tf.get_variable('b', [1], initializer=self.const_initializer)
             beta = tf.nn.sigmoid(tf.matmul(x, w_x) +
                                  tf.matmul(h, w_h) + b)  # (N, 1)
-            weighted_features = tf.multiply(
-                beta, s_features) + tf.multiply((1. - beta), v_features)
+            weighted_features = s_features
+            # weighted_features = tf.multiply(
+            #     beta, s_features) + tf.multiply((1. - beta), v_features)
             return weighted_features, beta
 
     def _init_lstm(self):
-        with tf.variable_scope('init_lstm'):
-            user_item_emb = tf.concat([self.user_emb, self.item_emb], axis=1)
+        with tf.compat.v1.variable_scope('init_lstm'):
+            user_item_prototype_emb = tf.concat([self.user_emb, self.item_emb, self.prototype_emb], axis=1)
 
-            w_h_ui = tf.get_variable(
-                'w_h_ui', [self.D, self.C], initializer=self.weight_initializer)
-            b_h = tf.get_variable(
-                'b_h', [self.C], initializer=self.const_initializer)
-            h = tf.matmul(user_item_emb, w_h_ui) + b_h
+            w_h_ui = tf.compat.v1.get_variable('w_h_ui', [3 * self.F, self.C], initializer=self.weight_initializer)
+            b_h = tf.compat.v1.get_variable('b_h', [self.C], initializer=self.const_initializer)
+            h = tf.matmul(user_item_prototype_emb, w_h_ui) + b_h
 
-            w_c_ui = tf.get_variable(
-                'w_c_ui', [self.D, self.C], initializer=self.weight_initializer)
-            b_c = tf.get_variable(
-                'b_c', [self.C], initializer=self.const_initializer)
-            c = tf.matmul(user_item_emb, w_c_ui) + b_c
+            w_c_ui = tf.compat.v1.get_variable('w_c_ui', [3 * self.F, self.C], initializer=self.weight_initializer)
+            b_c = tf.compat.v1.get_variable('b_c', [self.C], initializer=self.const_initializer)
+            c = tf.matmul(user_item_prototype_emb, w_c_ui) + b_c
 
             h = tf.nn.tanh(h)
             c = tf.nn.tanh(c)

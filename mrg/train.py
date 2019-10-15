@@ -10,6 +10,7 @@ from bleu import compute_bleu
 from rouge import rouge
 
 from tensorflow.python.util import deprecation
+from tensorflow.core.protobuf import rewriter_config_pb2 
 from collections import defaultdict
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -67,8 +68,8 @@ def train_fn(model):
 
     trainable_vars = tf.trainable_variables()
     count_parameters(trainable_vars)
-
-    optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
+    
+    optimizer = tf.compat.v1.train.AdamOptimizer(FLAGS.learning_rate)
 
     rating_l2_loss = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars
                                if check_scope_rating(v.name) and 'bias' not in v.name])
@@ -101,6 +102,11 @@ def main(_):
 
     config = tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
     config.gpu_options.allow_growth = True
+
+    #Disable arithmetic optimization, which causes AlreadyExistError when collecting gradients 
+    off = rewriter_config_pb2.RewriterConfig.OFF 
+    config.graph_options.rewrite_options.arithmetic_optimization = off 
+
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
         for epoch in range(1, FLAGS.num_epochs + 1):
@@ -123,12 +129,14 @@ def main(_):
 
                 review_users, review_items, _, photo_ids, reviews = get_review_data(users, items, ratings,
                                                                                     data_reader.train_review)
+                review_prototypes = get_prototype_data(
+                    review_users, review_items, data_reader.train_user_review, data_reader.train_item_review)
                 img_idx = [data_reader.train_id2idx[photo_id]
                            for photo_id in photo_ids]
                 images = data_reader.train_img_features[img_idx]
 
                 fd = model.feed_dict(users=review_users, items=review_items,
-                                     prototypes=prototypes, images=images, reviews=reviews, is_training=True)
+                                     prototypes=review_prototypes, images=images, reviews=reviews, is_training=True)
                 _, _review_loss = sess.run(
                     [update_review, model.review_loss], feed_dict=fd)
                 sum_review_loss += _review_loss
