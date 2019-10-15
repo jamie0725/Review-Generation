@@ -43,7 +43,8 @@ def get_review_data(users, items, ratings, review_data):
 def pad_sequence(mask_value, max_length, input_sequence):
     real_length = len(input_sequence)
     if real_length < max_length:
-        output_sequence = input_sequence + [mask_value] * (max_length - real_length)
+        output_sequence = input_sequence + \
+            [mask_value] * (max_length - real_length)
         length = real_length
     else:
         output_sequence = input_sequence[:max_length]
@@ -51,19 +52,20 @@ def pad_sequence(mask_value, max_length, input_sequence):
     return output_sequence
 
 
-def get_prototype_data(users, items, user_reviews, item_reviews, max_length=20, max_user_length=20, max_item_length=20, training=True):
+def get_prototype_data(users, items, user_reviews, item_reviews, max_length=20, max_user_length=20, max_item_length=20):
     batch_size = len(users)
     prototypes = []
     for user, item in zip(users, items):
-        if training:
-            padded_user_reviews = [pad_sequence(0, max_length, user_review[1]) for user_review in user_reviews[user]]
-            padded_item_reviews = [pad_sequence(0, max_length, item_review[1]) for item_review in item_reviews[item]]
-        else:
-            padded_user_reviews = [pad_sequence(0, max_length, user_review[1][0]) for user_review in user_reviews[user]]
-            padded_item_reviews = [pad_sequence(0, max_length, item_review[1][0]) for item_review in item_reviews[item]]
-        prototype_user = pad_sequence([0]*max_length, max_user_length, padded_user_reviews)  # (20,20)
-        prototype_item = pad_sequence([0]*max_length, max_item_length, padded_item_reviews)  # (20,20)
-        prototypes.append(prototype_user + prototype_item)                                  # (40,20)
+        padded_user_reviews = [pad_sequence(
+            0, max_length, user_review[1]) for user_review in user_reviews[user]]
+        padded_item_reviews = [pad_sequence(
+            0, max_length, item_review[1]) for item_review in item_reviews[item]]
+        prototype_user = pad_sequence(
+            [0]*max_length, max_user_length, padded_user_reviews)  # (20,20)
+        prototype_item = pad_sequence(
+            [0]*max_length, max_item_length, padded_item_reviews)  # (20,20)
+        # (40,20)
+        prototypes.append(prototype_user + prototype_item)
     prototypes = np.array(prototypes, dtype=np.int32).reshape(batch_size, -1)
     return prototypes
 
@@ -76,7 +78,8 @@ def batch_review_normalize(reviews, max_length=None):
     else:
         max_length = max([len(review) for review in reviews])
 
-    norm_reviews = np.zeros(shape=[batch_size, max_length], dtype=np.int32)  # == PAD
+    norm_reviews = np.zeros(
+        shape=[batch_size, max_length], dtype=np.int32)  # == PAD
     for i, review in enumerate(reviews):
         for j, word in enumerate(review):
             norm_reviews[i, j] = word
@@ -89,14 +92,19 @@ class DataReader:
     def __init__(self, data_dir, training_shuffle=True):
         self.data_dir = data_dir
         self.is_shuffle = training_shuffle
-        self.total_users = pickle.load(open(os.path.join(data_dir, 'users.pkl'), "rb")) + 1  # len(self._read_ids(os.path.join(data_dir, 'users.txt')))
-        self.total_items = pickle.load(open(os.path.join(data_dir, 'items.pkl'), "rb")) + 1  # len(self._read_ids(os.path.join(data_dir, 'items.txt')))
-        print('Total users: {}, total items: {}'.format(self.total_users, self.total_items))
+        self.total_users = len(self._read_ids(
+            os.path.join(data_dir, 'users.txt')))
+        self.total_items = len(self._read_ids(
+            os.path.join(data_dir, 'items.txt')))
+        print('Total users: {}, total items: {}'.format(
+            self.total_users, self.total_items))
 
         train_data = self._read_data(os.path.join(data_dir, 'train.pkl'))
         test_data = self._read_data(os.path.join(data_dir, 'test.pkl'))
-        self.train_rating, self.train_review, self.train_user_review, self.train_item_review = self._prepare_data(train_data, training=True)
-        self.test_rating, self.test_review, self.test_user_review, self.test_item_review = self._prepare_data(test_data)
+        self.train_rating, self.train_review, self.train_user_review, self.train_item_review = self._prepare_data(
+            train_data, training=True)
+        self.test_rating, self.test_review, self.test_user_review, self.test_item_review = self._prepare_data(
+            test_data)
 
         self.global_rating = np.asarray(self.train_rating)[:, 2].mean()
         print('Global rating: {:.2f}'.format(self.global_rating))
@@ -104,11 +112,13 @@ class DataReader:
         self.load_images()
 
     def load_images(self):
-        self.train_id2idx = self._read_img_id2idx(os.path.join(self.data_dir, 'train.id_to_idx.pkl'))
+        self.train_id2idx = self._read_img_id2idx(
+            os.path.join(self.data_dir, 'train.id_to_idx.pkl'))
         self.train_img_features = self._read_img_feature(os.path.join(self.data_dir, 'img_feats/train'),
                                                          len(self.train_id2idx.keys()))
 
-        self.test_id2idx = self._read_img_id2idx(os.path.join(self.data_dir, 'test.id_to_idx.pkl'))
+        self.test_id2idx = self._read_img_id2idx(
+            os.path.join(self.data_dir, 'test.id_to_idx.pkl'))
         self.test_img_features = self._read_img_feature(os.path.join(self.data_dir, 'img_feats/test'),
                                                         len(self.test_id2idx.keys()))
 
@@ -167,7 +177,6 @@ class DataReader:
         print('Reading image features: %s' % feat_dir)
         all_feats = np.ndarray([num_imgs, 196, 512], dtype=np.float32)
         for file_path in tqdm(glob.glob('{}/*.hkl'.format(feat_dir))):
-            file_path = file_path.replace('\\', '/')
             start = int(file_path.split('/')[-1].split('_')[0])
             end = int(file_path.split('/')[-1].split('_')[1].split('.')[0])
             all_feats[start:end, :] = hickle.load(file_path)
@@ -207,12 +216,13 @@ class DataReader:
             for photo_id, photo_reviews in exp['Reviews'].items():
                 if training:
                     for photo_review in photo_reviews:
-                        review_data[(user, item)].append((photo_id, photo_review))
+                        review_data[(user, item)].append(
+                            (photo_id, photo_review))
                         user_review_data[user].append((photo_id, photo_review))
                         item_review_data[item].append((photo_id, photo_review))
                 else:
                     review_data[(user, item)].append((photo_id, photo_reviews))
-                    user_review_data[user].append((photo_id, photo_reviews))
-                    item_review_data[item].append((photo_id, photo_reviews))
+                    user_review_data[user].append((photo_id, photo_reviews)) 
+                    item_review_data[item].append((photo_id, photo_reviews)) 
 
-        return rating_data, review_data, user_review_data, item_review_data
+        return rating_data, review_data, user_review_data, item_review_data 
