@@ -45,10 +45,8 @@ def pad_sequence(mask_value, max_length, input_sequence):
     if real_length < max_length:
         output_sequence = input_sequence + \
             [mask_value] * (max_length - real_length)
-        length = real_length
     else:
         output_sequence = input_sequence[:max_length]
-        length = max_length
     return output_sequence
 
 

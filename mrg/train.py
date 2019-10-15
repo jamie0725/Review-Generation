@@ -100,15 +100,15 @@ def main(_):
     log_file = open('log.txt', 'w')
     test_step = 0
 
-    config = tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
+    config = tf.compat.v1.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
     config.gpu_options.allow_growth = True
 
     # Disable arithmetic optimization, which causes AlreadyExistError when collecting gradients
     off = rewriter_config_pb2.RewriterConfig.OFF
     config.graph_options.rewrite_options.arithmetic_optimization = off
 
-    with tf.Session(config=config) as sess:
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session(config=config) as sess:
+        sess.run(tf.compat.v1.global_variables_initializer())
         for epoch in range(1, FLAGS.num_epochs + 1):
             log_info(log_file, "\nEpoch: {}/{}".format(epoch, FLAGS.num_epochs))
 
@@ -160,7 +160,7 @@ def main(_):
                 test_step += 1
                 prototypes = get_prototype_data(
                     users, items, data_reader.train_user_review, data_reader.train_item_review)
-                fd = model.feed_dict(users, items, prototypes, ratings)
+                fd = model.feed_dict(users, items, ratings=ratings, prototypes=prototypes)
                 sess.run(model.update_metrics, feed_dict=fd)
 
                 review_users, review_items, review_ratings, photo_ids, reviews = get_review_data(users, items, ratings,
@@ -249,4 +249,4 @@ def main(_):
 
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.compat.v1.app.run()

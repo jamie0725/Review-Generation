@@ -24,13 +24,13 @@ class Model:
         self.weight_initializer = tf.contrib.layers.xavier_initializer()
         self.const_initializer = tf.zeros_initializer()
 
-        self.users = tf.placeholder(tf.int32, shape=[None])
-        self.items = tf.placeholder(tf.int32, shape=[None])
+        self.users = tf.compat.v1.placeholder(tf.int32, shape=[None])
+        self.items = tf.compat.v1.placeholder(tf.int32, shape=[None])
         self.prototypes = tf.compat.v1.placeholder(tf.int32, shape=[None, None])
-        self.ratings = tf.placeholder(tf.float32, shape=[None])
-        self.images = tf.placeholder(tf.float32, shape=[None, self.L, self.D])
-        self.reviews = tf.placeholder(tf.int32, shape=[None, None])
-        self.is_training = tf.placeholder(tf.bool)
+        self.ratings = tf.compat.v1.placeholder(tf.float32, shape=[None])
+        self.images = tf.compat.v1.placeholder(tf.float32, shape=[None, self.L, self.D])
+        self.reviews = tf.compat.v1.placeholder(tf.int32, shape=[None, None])
+        self.is_training = tf.compat.v1.placeholder(tf.bool)
 
         self._init_embeddings()
 
@@ -51,21 +51,21 @@ class Model:
         self._build_review_sampler(max_decode_length=self.T)
 
     def _init_embeddings(self):
-        self.user_matrix = tf.get_variable(
+        self.user_matrix = tf.compat.v1.get_variable(
             name='user_matrix',
             shape=[self.total_users, self.F],
             initializer=self.weight_initializer,
             dtype=tf.float32
         )
 
-        self.item_matrix = tf.get_variable(
+        self.item_matrix = tf.compat.v1.get_variable(
             name='item_matrix',
             shape=[self.total_items, self.F],
             initializer=self.weight_initializer,
             dtype=tf.float32
         )
 
-        self.word_matrix = tf.get_variable(
+        self.word_matrix = tf.compat.v1.get_variable(
             name='word_matrix',
             shape=[self.V, self.W],
             initializer=tf.constant_initializer(load_glove(self.V, self.W)),
@@ -83,7 +83,7 @@ class Model:
             return state
 
     def _get_features(self, user_emb, item_emb, prototype_emb, num_layers=1):
-        with tf.compat.v1.variable_scope('features', reuse=tf.AUTO_REUSE):
+        with tf.compat.v1.variable_scope('features', reuse=tf.compat.v1.AUTO_REUSE):
             features = tf.concat([user_emb, item_emb, prototype_emb], axis=1)
             for layer in range(num_layers):
                 w = tf.compat.v1.get_variable('w{}'.format(layer), [3 * self.F, 3 * self.F], initializer=self.weight_initializer)
@@ -96,21 +96,21 @@ class Model:
     def _build_rating_predictor(self):
         features = self._get_features(self.user_emb, self.item_emb, self.prototype_emb)
 
-        with tf.variable_scope('rating'):
+        with tf.compat.v1.variable_scope('rating'):
             rating_labels = tf.reshape(self.ratings, [-1, 1])
             rating_preds = self.global_rating + \
                 tf.layers.dense(features, units=1, name='prediction')
-            self.rating_loss = tf.losses.mean_squared_error(
+            self.rating_loss = tf.compat.v1.losses.mean_squared_error(
                 rating_labels, rating_preds)
 
             self.rating_preds = tf.clip_by_value(
                 rating_preds, clip_value_min=1.0, clip_value_max=5.0)
-            self.mae, mae_update = tf.metrics.mean_absolute_error(
+            self.mae, mae_update = tf.compat.v1.metrics.mean_absolute_error(
                 rating_labels, self.rating_preds, name='metrics/MAE')
-            self.rmse, rmse_update = tf.metrics.root_mean_squared_error(
+            self.rmse, rmse_update = tf.compat.v1.metrics.root_mean_squared_error(
                 rating_labels, self.rating_preds, name='metrics/RMSE')
 
-            metric_vars = tf.get_collection(
+            metric_vars = tf.compat.v1.get_collection(
                 tf.GraphKeys.LOCAL_VARIABLES, scope="rating/metrics")
             self.init_metrics = tf.variables_initializer(var_list=metric_vars)
             self.update_metrics = tf.group([mae_update, rmse_update])
@@ -125,8 +125,8 @@ class Model:
                                             scope=(name + '_batch_norm'))
 
     def _visual_projection(self, features):
-        with tf.variable_scope('review/visual_projection'):
-            w = tf.get_variable('w', [self.D, self.D],
+        with tf.compat.v1.variable_scope('review/visual_projection'):
+            w = tf.compat.v1.get_variable('w', [self.D, self.D],
                                 initializer=self.weight_initializer)
             features_flat = tf.reshape(features, [-1, self.D])
             features_proj = tf.matmul(features_flat, w)
@@ -134,16 +134,16 @@ class Model:
             return features_proj
 
     def _attention_layer(self, h, features, features_proj):
-        with tf.variable_scope('attention'):
+        with tf.compat.v1.variable_scope('attention'):
             L = get_shape(features)[1]
 
-            w = tf.get_variable('w', [self.C, self.D],
+            w = tf.compat.v1.get_variable('w', [self.C, self.D],
                                 initializer=self.weight_initializer)
-            b = tf.get_variable(
+            b = tf.compat.v1.get_variable(
                 'b', [self.D], initializer=self.const_initializer)
-            w_att = tf.get_variable(
+            w_att = tf.compat.v1.get_variable(
                 'w_att', [self.D, 1], initializer=self.weight_initializer)
-            b_att = tf.get_variable(
+            b_att = tf.compat.v1.get_variable(
                 'b_att', [1], initializer=self.const_initializer)
 
             h_att = tf.nn.tanh(
@@ -157,12 +157,12 @@ class Model:
         return context, alpha
 
     def _fusion_gate(self, x, h, s_features, v_features):
-        with tf.variable_scope('fusion_gate'):
-            w_x = tf.get_variable(
+        with tf.compat.v1.variable_scope('fusion_gate'):
+            w_x = tf.compat.v1.get_variable(
                 'w_x', [self.W, 1], initializer=self.weight_initializer)
-            w_h = tf.get_variable(
+            w_h = tf.compat.v1.get_variable(
                 'w_h', [self.C, 1], initializer=self.weight_initializer)
-            b = tf.get_variable('b', [1], initializer=self.const_initializer)
+            b = tf.compat.v1.get_variable('b', [1], initializer=self.const_initializer)
             beta = tf.nn.sigmoid(tf.matmul(x, w_x) +
                                  tf.matmul(h, w_h) + b)  # (N, 1)
             weighted_features = s_features
@@ -187,21 +187,21 @@ class Model:
             return c, h
 
     def _decode_lstm(self, x, h, context):
-        with tf.variable_scope('decode_lstm'):
-            w_h = tf.get_variable(
+        with tf.compat.v1.variable_scope('decode_lstm'):
+            w_h = tf.compat.v1.get_variable(
                 'w_h', [self.C, self.W], initializer=self.weight_initializer)
-            b_h = tf.get_variable(
+            b_h = tf.compat.v1.get_variable(
                 'b_h', [self.W], initializer=self.const_initializer)
-            w_out = tf.get_variable(
+            w_out = tf.compat.v1.get_variable(
                 'w_out', [self.W, self.V], initializer=self.weight_initializer)
-            b_out = tf.get_variable(
+            b_out = tf.compat.v1.get_variable(
                 'b_out', [self.V], initializer=self.const_initializer)
 
             h = tf.layers.dropout(h, self.dropout_rate,
                                   training=self.is_training)
             h_logits = tf.matmul(h, w_h) + b_h
 
-            w_ctx2out = tf.get_variable('w_ctx2out', [get_shape(
+            w_ctx2out = tf.compat.v1.get_variable('w_ctx2out', [get_shape(
                 context)[1], self.W], initializer=self.weight_initializer)
             h_logits += tf.matmul(context, w_ctx2out)
 
@@ -214,7 +214,7 @@ class Model:
             return out_logits
 
     def _build_review_generator(self):
-        with tf.variable_scope('review', reuse=tf.AUTO_REUSE):
+        with tf.compat.v1.variable_scope('review', reuse=tf.compat.v1.AUTO_REUSE):
             reviews_inputs = self.reviews[:, :self.T - 1]
             reviews_emb = tf.nn.embedding_lookup(
                 self.word_matrix, reviews_inputs)
@@ -246,7 +246,7 @@ class Model:
             self.review_loss = loss / tf.reduce_sum(mask)
 
     def _build_review_sampler(self, max_decode_length):
-        with tf.variable_scope('review', reuse=tf.AUTO_REUSE):
+        with tf.compat.v1.variable_scope('review', reuse=tf.compat.v1.AUTO_REUSE):
             sampled_word_list = []
             beta_list = []
             alpha_list = []
