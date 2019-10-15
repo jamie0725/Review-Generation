@@ -6,3 +6,9 @@ __pycache__
 /mrg/models/
 
 .vscode/
+
+*.gz
+
+*.h5
+
+*.ipynb
