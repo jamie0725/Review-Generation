@@ -10,7 +10,7 @@ from bleu import compute_bleu
 from rouge import rouge
 
 from tensorflow.python.util import deprecation
-from tensorflow.core.protobuf import rewriter_config_pb2 
+from tensorflow.core.protobuf import rewriter_config_pb2
 from collections import defaultdict
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -68,7 +68,7 @@ def train_fn(model):
 
     trainable_vars = tf.trainable_variables()
     count_parameters(trainable_vars)
-    
+
     optimizer = tf.compat.v1.train.AdamOptimizer(FLAGS.learning_rate)
 
     rating_l2_loss = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars
@@ -103,9 +103,9 @@ def main(_):
     config = tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
     config.gpu_options.allow_growth = True
 
-    #Disable arithmetic optimization, which causes AlreadyExistError when collecting gradients 
-    off = rewriter_config_pb2.RewriterConfig.OFF 
-    config.graph_options.rewrite_options.arithmetic_optimization = off 
+    # Disable arithmetic optimization, which causes AlreadyExistError when collecting gradients
+    off = rewriter_config_pb2.RewriterConfig.OFF
+    config.graph_options.rewrite_options.arithmetic_optimization = off
 
     with tf.Session(config=config) as sess:
         sess.run(tf.global_variables_initializer())
@@ -158,18 +158,21 @@ def main(_):
             sess.run(model.init_metrics)
             for users, items, ratings in data_reader.read_test_set(FLAGS.batch_size, rating_only=True):
                 test_step += 1
-
-                fd = model.feed_dict(users, items, ratings)
+                prototypes = get_prototype_data(
+                    users, items, data_reader.train_user_review, data_reader.train_item_review)
+                fd = model.feed_dict(users, items, prototypes, ratings)
                 sess.run(model.update_metrics, feed_dict=fd)
 
                 review_users, review_items, review_ratings, photo_ids, reviews = get_review_data(users, items, ratings,
                                                                                                  data_reader.test_review)
+                review_prototypes = get_prototype_data(
+                    review_users, review_items, data_reader.train_user_review, data_reader.train_item_review)
                 img_idx = [data_reader.test_id2idx[photo_id]
                            for photo_id in photo_ids]
                 images = data_reader.test_img_features[img_idx]
 
                 fd = model.feed_dict(users=review_users,
-                                     items=review_items, images=images)
+                                     items=review_items, prototypes=review_prototypes, images=images)
                 _reviews, _alphas, _betas = sess.run(
                     [model.sampled_reviews, model.alphas, model.betas], feed_dict=fd)
 
