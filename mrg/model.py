@@ -8,11 +8,13 @@ class Model:
 
     def __init__(self, total_users, total_items, global_rating,
                  num_factors, img_dims, vocab_size,
-                 word_dim, lstm_dim, max_length, dropout_rate):
+                 word_dim, lstm_dim, max_length, dropout_rate, vocab, word2vecmodel):
         self.total_users = total_users
         self.total_items = total_items
         self.global_rating = global_rating
         self.dropout_rate = dropout_rate
+        self.vocab = vocab
+        self.word2vecmodel = word2vecmodel
         self.F = num_factors
         self.L = img_dims[0]
         self.D = img_dims[1]
@@ -47,6 +49,8 @@ class Model:
         self._build_rating_predictor()
         self._build_review_generator()
         self._build_review_sampler(max_decode_length=self.T)
+
+
 
     def _prototype_encoder(self, inputs):
         with tf.compat.v1.variable_scope('prototype_encoder'):
@@ -151,6 +155,18 @@ class Model:
             w_x = tf.compat.v1.get_variable('w_x', [self.W, 1], initializer=self.weight_initializer)
             w_h = tf.compat.v1.get_variable('w_h', [self.C, 1], initializer=self.weight_initializer)
             b = tf.compat.v1.get_variable('b', [1], initializer=self.const_initializer)
+
+            # (batvh size, max_length, word_dim)
+            # (max_length, batvh size, word_dim)
+            # [:,t,:]
+            # before
+            # (64, 1, 200) * (200,1)
+
+            # now
+            # (t, 19, 200) * (200, 1)
+            # (1, 19) +   (1,256) * (256,1)
+            # (1,19) + (1,1) + (1,1)
+            # (1,19)
             beta = tf.nn.sigmoid(tf.matmul(x, w_x) + tf.matmul(h, w_h) + b)  # (N, 1)
             #weighted_features = tf.multiply(beta, s_features) + tf.multiply((1. - beta), v_features)
             weighted_features = s_features  # ignore visual features
@@ -193,6 +209,9 @@ class Model:
             return out_logits
 
     def _build_review_generator(self):
+        def convert_to_sentence(indices):
+            return " ".join([self.vocab[i] for i in indices])
+
         with tf.compat.v1.variable_scope('review', reuse=tf.AUTO_REUSE):
             reviews_inputs = self.reviews[:, :self.T - 1]
             reviews_emb = tf.nn.embedding_lookup(self.word_matrix, reviews_inputs)
@@ -203,7 +222,29 @@ class Model:
 
             self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.C, name='LSTM_Cell')
             c, h = self._init_lstm()
+            # for t in range(64):
+            #     x = reviews_emb[t, :, :]
 
+            #     visual_context, alpha = self._attention_layer(h, self.visual_features, self.visual_projection)
+            #     # context, beta = self._fusion_gate(x, h, self.sentiment_features, visual_context)
+            #     context = self.sentiment_features
+            
+            # # before
+            # # (64, 1, 200) , (64,1, 256)
+            # # = (64, 1, 456)
+
+            # # now
+            # # (1, 19, 200)
+            # # (1, 19, 456)
+
+            #     cell_input = tf.concat([x, context], axis=1)
+            #     _, (c, h) = self.cell(inputs=cell_input, state=[c, h])
+
+            #     logits = self._decode_lstm(x, h, context)
+            #     logits_list.append(logits)
+            #     loss += tf.reduce_sum(
+            #         tf.nn.sparse_softmax_cross_entropy_with_logits(labels=reviews_labels[:, t], logits=logits) * mask[:, t])
+            logits_list = []
             for t in range(self.T - 1):
                 x = reviews_emb[:, t, :]
 
@@ -214,10 +255,14 @@ class Model:
                 _, (c, h) = self.cell(inputs=cell_input, state=[c, h])
 
                 logits = self._decode_lstm(x, h, context)
-
-                loss += tf.reduce_sum(
-                    tf.nn.sparse_softmax_cross_entropy_with_logits(labels=reviews_labels[:, t], logits=logits) * mask[:, t])
-
+                logits_list.append(logits)
+                # loss += tf.reduce_sum(
+                #     tf.nn.sparse_softmax_cross_entropy_with_logits(labels=reviews_labels[:, t], logits=logits) * mask[:, t])
+            for n in range(64):
+                labels = convert_to_sentence(reviews_labels[n,:].eval())
+                logits = tf.argmax(logits[n],axis=1)
+                logits = convert_to_sentence(logits)
+                predict_similarity(labels,logits, self.word2vecmodel)
             self.review_loss = loss / tf.reduce_sum(mask)
 
     def _build_review_sampler(self, max_decode_length):

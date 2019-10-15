@@ -85,12 +85,14 @@ def train_fn(model):
 
 def main(_):
     vocab = load_vocabulary(FLAGS.data_dir)
+    print(vocab[0], vocab[10], vocab[100])
     data_reader = DataReader(FLAGS.data_dir)
 
     model = Model(total_users=data_reader.total_users, total_items=data_reader.total_items,
                   global_rating=data_reader.global_rating, num_factors=FLAGS.num_factors,
                   img_dims=[196, 512], vocab_size=len(vocab), word_dim=FLAGS.word_dim,
-                  lstm_dim=FLAGS.lstm_dim, max_length=FLAGS.max_length, dropout_rate=FLAGS.dropout_rate)
+                  lstm_dim=FLAGS.lstm_dim, max_length=FLAGS.max_length, dropout_rate=FLAGS.dropout_rate, 
+                  vocab = vocab, word2vecmodel = word2vecmodel)
 
     update_rating, update_review, global_step = train_fn(model)
 
