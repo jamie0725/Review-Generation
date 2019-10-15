@@ -32,12 +32,12 @@ def predict_similarity(sentence1, sentence2, word2vecmodel):
 	prediction = model.predict([X_test['left'], X_test['right']])
 	return prediction
 
-if __name__ == "__main__":
-	# Load word2vec
-	print("Loading word2vec model(it may takes 2-3 mins) ...")
+# if __name__ == "__main__":
+# 	# Load word2vec
+# 	print("Loading word2vec model(it may takes 2-3 mins) ...")
 
- 	word2vecmodel = KeyedVectors.load_word2vec_format("./data/GoogleNews-vectors-negative300.bin.gz", binary=True)
+#  	word2vecmodel = KeyedVectors.load_word2vec_format("./data/GoogleNews-vectors-negative300.bin.gz", binary=True)
 
-	prediction = predict_similarity('hey there', 'hey there', word2vecmodel)
+# 	prediction = predict_similarity('hey there', 'hey there', word2vecmodel)
 
-	print(prediction)
+# 	print(prediction)

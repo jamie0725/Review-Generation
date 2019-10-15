@@ -1,18 +1,21 @@
-from rouge import rouge
-from bleu import compute_bleu
-from utils import count_parameters, load_vocabulary, decode_reviews, log_info
-from reader import DataReader, get_review_data, batch_review_normalize, get_prototype_data
-from model import Model
-import numpy as np
-from tensorflow.core.protobuf import rewriter_config_pb2
+from collections import defaultdict
+
 import tensorflow as tf
+import numpy as np
+
+from model import Model
+from reader import DataReader, get_review_data, batch_review_normalize, get_prototype_data
+from utils import count_parameters, load_vocabulary, decode_reviews, log_info, predict_similarity
+from bleu import compute_bleu
+from rouge import rouge
+from gensim.models import KeyedVectors
+
 from tensorflow.python.util import deprecation
+from tensorflow.core.protobuf import rewriter_config_pb2
 from collections import defaultdict
 import os
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 deprecation._PRINT_DEPRECATION_WARNINGS = False
-
 
 # Parameters
 # ==================================================
@@ -55,7 +58,7 @@ def check_scope_rating(var_name):
 
 
 def check_scope_review(var_name):
-    for name in ['user', 'item', 'features', 'review', 'prototype']:
+    for name in ['user', 'item', 'features', 'review']:
         if name in var_name:
             return True
     return False
@@ -67,7 +70,7 @@ def train_fn(model):
     trainable_vars = tf.trainable_variables()
     count_parameters(trainable_vars)
 
-    optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
+    optimizer = tf.compat.v1.train.AdamOptimizer(FLAGS.learning_rate)
 
     rating_l2_loss = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars
                                if check_scope_rating(v.name) and 'bias' not in v.name])
@@ -77,7 +80,8 @@ def train_fn(model):
                                if check_scope_review(v.name) and 'bias' not in v.name])
     model.review_loss = model.review_loss + FLAGS.lambda_reg * review_l2_loss
 
-    update_rating = optimizer.minimize(model.rating_loss, name='update_rating', global_step=global_step)
+    update_rating = optimizer.minimize(
+        model.rating_loss, name='update_rating', global_step=global_step)
     update_review = optimizer.minimize(model.review_loss, name='update_review')
 
     return update_rating, update_review, global_step
@@ -85,13 +89,17 @@ def train_fn(model):
 
 def main(_):
     vocab = load_vocabulary(FLAGS.data_dir)
-    print(vocab[0], vocab[10], vocab[100])
     data_reader = DataReader(FLAGS.data_dir)
+    # This takes 2-3 mins
+    word2vecmodel = KeyedVectors.load_word2vec_format(os.path.join(FLAGS.data_dir, 'GoogleNews-vectors-negative300.bin.gz'), binary=True)
+    # Sanity check
+    prediction = predict_similarity('hey there', 'hey there', word2vecmodel)
+    print(prediction)
 
     model = Model(total_users=data_reader.total_users, total_items=data_reader.total_items,
                   global_rating=data_reader.global_rating, num_factors=FLAGS.num_factors,
                   img_dims=[196, 512], vocab_size=len(vocab), word_dim=FLAGS.word_dim,
-                  lstm_dim=FLAGS.lstm_dim, max_length=FLAGS.max_length, dropout_rate=FLAGS.dropout_rate, 
+                  lstm_dim=FLAGS.lstm_dim, max_length=FLAGS.max_length, dropout_rate=FLAGS.dropout_rate,
                   vocab = vocab, word2vecmodel = word2vecmodel)
 
     update_rating, update_review, global_step = train_fn(model)
@@ -99,17 +107,15 @@ def main(_):
     log_file = open('log.txt', 'w')
     test_step = 0
 
-    saver = tf.compat.v1.train.Saver()
-
-    config = tf.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
+    config = tf.compat.v1.ConfigProto(allow_soft_placement=FLAGS.allow_soft_placement)
     config.gpu_options.allow_growth = True
 
     # Disable arithmetic optimization, which causes AlreadyExistError when collecting gradients
     off = rewriter_config_pb2.RewriterConfig.OFF
     config.graph_options.rewrite_options.arithmetic_optimization = off
 
-    with tf.Session(config=config) as sess:
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session(config=config) as sess:
+        sess.run(tf.compat.v1.global_variables_initializer())
         for epoch in range(1, FLAGS.num_epochs + 1):
             log_info(log_file, "\nEpoch: {}/{}".format(epoch, FLAGS.num_epochs))
 
@@ -120,26 +126,31 @@ def main(_):
             # Training
             for users, items, ratings in data_reader.read_train_set(FLAGS.batch_size, rating_only=True):
                 count += 1
-                prototypes = get_prototype_data(users, items, data_reader.train_user_review, data_reader.train_item_review)
-                fd = model.feed_dict(users=users, items=items, prototypes=prototypes, ratings=ratings, is_training=True)
-                _step, _, _rating_loss = sess.run([global_step, update_rating, model.rating_loss], feed_dict=fd)
+                prototypes = get_prototype_data(
+                    users, items, data_reader.train_user_review, data_reader.train_item_review)
+                fd = model.feed_dict(
+                    users=users, items=items, prototypes=prototypes, ratings=ratings, is_training=True)
+                _step, _, _rating_loss = sess.run(
+                    [global_step, update_rating, model.rating_loss], feed_dict=fd)
                 sum_rating_loss += _rating_loss
 
                 review_users, review_items, _, photo_ids, reviews = get_review_data(users, items, ratings,
                                                                                     data_reader.train_review)
-                img_idx = [data_reader.train_id2idx[photo_id] for photo_id in photo_ids]
+                review_prototypes = get_prototype_data(
+                    review_users, review_items, data_reader.train_user_review, data_reader.train_item_review)
+                img_idx = [data_reader.train_id2idx[photo_id]
+                           for photo_id in photo_ids]
                 images = data_reader.train_img_features[img_idx]
 
-                fd = model.feed_dict(users=review_users, items=review_items, prototypes=prototypes, images=images,
-                                     reviews=reviews, is_training=True)
-                _, _review_loss = sess.run([update_review, model.review_loss], feed_dict=fd)
+                fd = model.feed_dict(users=review_users, items=review_items,
+                                     prototypes=review_prototypes, images=images, reviews=reviews, is_training=True)
+                _, _review_loss = sess.run(
+                    [update_review, model.review_loss], feed_dict=fd)
                 sum_review_loss += _review_loss
 
                 if _step % FLAGS.display_step == 0:
                     data_reader.iter.set_postfix(rating_loss=(sum_rating_loss / count),
                                                  review_loss=(sum_review_loss / count))
-
-            save_path = saver.save(sess, f"tmp/model{epoch}.ckpt")
 
             # Testing
             review_gen_corpus = defaultdict(list)
@@ -154,30 +165,34 @@ def main(_):
             sess.run(model.init_metrics)
             for users, items, ratings in data_reader.read_test_set(FLAGS.batch_size, rating_only=True):
                 test_step += 1
-
-                prototypes = get_prototype_data(users, items, data_reader.test_user_review, data_reader.test_item_review, training=False)
-
+                prototypes = get_prototype_data(
+                    users, items, data_reader.train_user_review, data_reader.train_item_review)
                 fd = model.feed_dict(users, items, ratings=ratings, prototypes=prototypes)
                 sess.run(model.update_metrics, feed_dict=fd)
 
                 review_users, review_items, review_ratings, photo_ids, reviews = get_review_data(users, items, ratings,
                                                                                                  data_reader.test_review)
-                img_idx = [data_reader.test_id2idx[photo_id] for photo_id in photo_ids]
+                review_prototypes = get_prototype_data(
+                    review_users, review_items, data_reader.train_user_review, data_reader.train_item_review)
+                img_idx = [data_reader.test_id2idx[photo_id]
+                           for photo_id in photo_ids]
                 images = data_reader.test_img_features[img_idx]
 
-                review_prototypes = get_prototype_data(review_users, review_items, data_reader.test_user_review, data_reader.test_item_review, training=False)
-
-                fd = model.feed_dict(users=review_users, items=review_items, images=images, prototypes=review_prototypes)
-                _reviews, _alphas, _betas = sess.run([model.sampled_reviews, model.alphas, model.betas], feed_dict=fd)
+                fd = model.feed_dict(users=review_users,
+                                     items=review_items, prototypes=review_prototypes, images=images)
+                _reviews, _alphas, _betas = sess.run(
+                    [model.sampled_reviews, model.alphas, model.betas], feed_dict=fd)
 
                 gen_reviews = decode_reviews(_reviews, vocab)
-                ref_reviews = [decode_reviews(batch_review_normalize(ref), vocab) for ref in reviews]
+                ref_reviews = [decode_reviews(
+                    batch_review_normalize(ref), vocab) for ref in reviews]
 
                 for user, item, gen, refs in zip(review_users, review_items, gen_reviews, ref_reviews):
                     review_gen_corpus[(user, item)].append(gen)
                     review_ref_corpus[(user, item)] += refs
 
-                    bleu_scores = compute_bleu([refs], [gen], max_order=4, smooth=True)
+                    bleu_scores = compute_bleu(
+                        [refs], [gen], max_order=4, smooth=True)
                     for order, score in bleu_scores.items():
                         photo_bleu_scores[order].append(score)
 
@@ -186,19 +201,23 @@ def main(_):
                         photo_rouge_scores[metric].append(score)
 
             _mae, _rmse = sess.run([model.mae, model.rmse])
-            log_info(log_file, '\nRating prediction results: MAE={:.3f}, RMSE={:.3f}'.format(_mae, _rmse))
+            log_info(log_file, '\nRating prediction results: MAE={:.3f}, RMSE={:.3f}'.format(
+                _mae, _rmse))
 
             log_info(log_file, '\nReview generation results:')
             log_info(log_file, '- Photo level: BLEU-scores = {:.2f}, {:.2f}, {:.2f}, {:.2f}'.format(
-                np.array(photo_bleu_scores[1]).mean() * 100, np.array(photo_bleu_scores[2]).mean() * 100,
+                np.array(photo_bleu_scores[1]).mean(
+                ) * 100, np.array(photo_bleu_scores[2]).mean() * 100,
                 np.array(photo_bleu_scores[3]).mean() * 100, np.array(photo_bleu_scores[4]).mean() * 100))
 
             for user_item, gen_reviews in review_gen_corpus.items():
-                references = [list(ref) for ref in set(tuple(ref) for ref in review_ref_corpus[user_item])]
+                references = [list(ref) for ref in set(tuple(ref)
+                                                       for ref in review_ref_corpus[user_item])]
 
                 user_item_bleu_scores = defaultdict(list)
                 for gen in gen_reviews:
-                    bleu_scores = compute_bleu([references], [gen], max_order=4, smooth=True)
+                    bleu_scores = compute_bleu(
+                        [references], [gen], max_order=4, smooth=True)
                     for order, score in bleu_scores.items():
                         user_item_bleu_scores[order].append(score)
                 for order, scores in user_item_bleu_scores.items():
@@ -213,19 +232,24 @@ def main(_):
                     review_rouge_scores[metric].append(np.array(scores).mean())
 
             log_info(log_file, '- Review level: BLEU-scores = {:.2f}, {:.2f}, {:.2f}, {:.2f}'.format(
-                np.array(review_bleu_scores[1]).mean() * 100, np.array(review_bleu_scores[2]).mean() * 100,
+                np.array(review_bleu_scores[1]).mean(
+                ) * 100, np.array(review_bleu_scores[2]).mean() * 100,
                 np.array(review_bleu_scores[3]).mean() * 100, np.array(review_bleu_scores[4]).mean() * 100))
 
             for metric in ['rouge_1', 'rouge_2', 'rouge_l']:
                 log_info(log_file, '- Photo level: {} = {:.2f}, {:.2f}, {:.2f}'.format(
                     metric,
-                    np.array(photo_rouge_scores['{}/p_score'.format(metric)]).mean() * 100,
-                    np.array(photo_rouge_scores['{}/r_score'.format(metric)]).mean() * 100,
+                    np.array(
+                        photo_rouge_scores['{}/p_score'.format(metric)]).mean() * 100,
+                    np.array(
+                        photo_rouge_scores['{}/r_score'.format(metric)]).mean() * 100,
                     np.array(photo_rouge_scores['{}/f_score'.format(metric)]).mean() * 100))
                 log_info(log_file, '- Review level: {} = {:.2f}, {:.2f}, {:.2f}'.format(
                     metric,
-                    np.array(review_rouge_scores['{}/p_score'.format(metric)]).mean() * 100,
-                    np.array(review_rouge_scores['{}/r_score'.format(metric)]).mean() * 100,
+                    np.array(
+                        review_rouge_scores['{}/p_score'.format(metric)]).mean() * 100,
+                    np.array(
+                        review_rouge_scores['{}/r_score'.format(metric)]).mean() * 100,
                     np.array(review_rouge_scores['{}/f_score'.format(metric)]).mean() * 100))
 
             log_info(log_file, '')

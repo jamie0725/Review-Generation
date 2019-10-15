@@ -1,14 +1,14 @@
 import tensorflow as tf
 
 from reader import batch_review_normalize, PAD_INDEX, START_INDEX
-from utils import load_glove, get_shape
+from utils import load_glove, get_shape, predict_similarity
 
 
 class Model:
 
     def __init__(self, total_users, total_items, global_rating,
                  num_factors, img_dims, vocab_size,
-                 word_dim, lstm_dim, max_length, dropout_rate, vocab, word2vecmodel):
+                 word_dim, lstm_dim, max_length, dropout_rate,vocab, word2vecmodel):
         self.total_users = total_users
         self.total_items = total_items
         self.global_rating = global_rating
@@ -25,7 +25,6 @@ class Model:
 
         self.weight_initializer = tf.contrib.layers.xavier_initializer()
         self.const_initializer = tf.zeros_initializer()
-        self.pre_trained_emb = load_glove(self.V, self.W)
 
         self.users = tf.compat.v1.placeholder(tf.int32, shape=[None])
         self.items = tf.compat.v1.placeholder(tf.int32, shape=[None])
@@ -41,25 +40,17 @@ class Model:
         self.item_emb = tf.nn.embedding_lookup(self.item_matrix, self.items)
         self.prototype_emb = self._prototype_encoder(self.prototypes)
 
-        self.sentiment_features = self._get_features(self.user_emb, self.item_emb, self.prototype_emb)
-        self.sentiment_features = self._batch_norm(self.sentiment_features, name='review/sentiment')
-        self.visual_features = self._batch_norm(self.images, name='review/visual')
+        self.sentiment_features = self._get_features(
+            self.user_emb, self.item_emb, self.prototype_emb)
+        self.sentiment_features = self._batch_norm(
+            self.sentiment_features, name='review/sentiment')
+        self.visual_features = self._batch_norm(
+            self.images, name='review/visual')
         self.visual_projection = self._visual_projection(self.visual_features)
 
         self._build_rating_predictor()
         self._build_review_generator()
         self._build_review_sampler(max_decode_length=self.T)
-
-
-
-    def _prototype_encoder(self, inputs):
-        with tf.compat.v1.variable_scope('prototype_encoder'):
-            hidden_size = self.F
-            inputs_emb = tf.nn.embedding_lookup(self.prototype_matrix, inputs)
-            gru_cell = tf.keras.layers.GRUCell(hidden_size)
-            rnn = tf.keras.layers.RNN(gru_cell, return_sequences=False, return_state=True)
-            _, state = rnn(inputs_emb)
-            return state
 
     def _init_embeddings(self):
         self.user_matrix = tf.compat.v1.get_variable(
@@ -79,41 +70,52 @@ class Model:
         self.word_matrix = tf.compat.v1.get_variable(
             name='word_matrix',
             shape=[self.V, self.W],
-            initializer=tf.constant_initializer(self.pre_trained_emb),
+            initializer=tf.constant_initializer(load_glove(self.V, self.W)),
             dtype=tf.float32
         )
 
-        self.prototype_matrix = tf.compat.v1.get_variable(
-            name='prototype_matrix',
-            shape=[self.V, self.W],
-            initializer=tf.constant_initializer(self.pre_trained_emb),
-            dtype=tf.float32
-        )
+    def _prototype_encoder(self, inputs):
+        with tf.compat.v1.variable_scope('prototype_encoder'):
+            hidden_size = self.F
+            inputs_emb = tf.nn.embedding_lookup(self.word_matrix, inputs)
+            gru_cell = tf.keras.layers.GRUCell(hidden_size)
+            rnn = tf.keras.layers.RNN(
+                gru_cell, return_sequences=False, return_state=True)
+            _, state = rnn(inputs_emb)
+            return state
 
     def _get_features(self, user_emb, item_emb, prototype_emb, num_layers=1):
-        with tf.compat.v1.variable_scope('features', reuse=tf.AUTO_REUSE):
+        with tf.compat.v1.variable_scope('features', reuse=tf.compat.v1.AUTO_REUSE):
             features = tf.concat([user_emb, item_emb, prototype_emb], axis=1)
             for layer in range(num_layers):
                 w = tf.compat.v1.get_variable('w{}'.format(layer), [3 * self.F, 3 * self.F], initializer=self.weight_initializer)
                 b = tf.compat.v1.get_variable('b{}'.format(layer), [3 * self.F], initializer=self.const_initializer)
                 features = tf.matmul(features, w) + b
                 features = tf.nn.tanh(features, 'h{}'.format(layer))
-
             return features
 
+
     def _build_rating_predictor(self):
+        def convert_to_sentence(indices):
+            return " ".join([self.vocab[i] for i in indices])
         features = self._get_features(self.user_emb, self.item_emb, self.prototype_emb)
 
         with tf.compat.v1.variable_scope('rating'):
             rating_labels = tf.reshape(self.ratings, [-1, 1])
-            rating_preds = self.global_rating + tf.layers.dense(features, units=1, name='prediction')
-            self.rating_loss = tf.losses.mean_squared_error(rating_labels, rating_preds)
+            rating_preds = self.global_rating + \
+                tf.layers.dense(features, units=1, name='prediction')
+            self.rating_loss = tf.compat.v1.losses.mean_squared_error(
+                rating_labels, rating_preds)
 
-            self.rating_preds = tf.clip_by_value(rating_preds, clip_value_min=1.0, clip_value_max=5.0)
-            self.mae, mae_update = tf.metrics.mean_absolute_error(rating_labels, self.rating_preds, name='metrics/MAE')
-            self.rmse, rmse_update = tf.metrics.root_mean_squared_error(rating_labels, self.rating_preds, name='metrics/RMSE')
+            self.rating_preds = tf.clip_by_value(
+                rating_preds, clip_value_min=1.0, clip_value_max=5.0)
+            self.mae, mae_update = tf.compat.v1.metrics.mean_absolute_error(
+                rating_labels, self.rating_preds, name='metrics/MAE')
+            self.rmse, rmse_update = tf.compat.v1.metrics.root_mean_squared_error(
+                rating_labels, self.rating_preds, name='metrics/RMSE')
 
-            metric_vars = tf.get_collection(tf.GraphKeys.LOCAL_VARIABLES, scope="rating/metrics")
+            metric_vars = tf.compat.v1.get_collection(
+                tf.GraphKeys.LOCAL_VARIABLES, scope="rating/metrics")
             self.init_metrics = tf.variables_initializer(var_list=metric_vars)
             self.update_metrics = tf.group([mae_update, rmse_update])
 
@@ -128,7 +130,8 @@ class Model:
 
     def _visual_projection(self, features):
         with tf.compat.v1.variable_scope('review/visual_projection'):
-            w = tf.compat.v1.get_variable('w', [self.D, self.D], initializer=self.weight_initializer)
+            w = tf.compat.v1.get_variable('w', [self.D, self.D],
+                                initializer=self.weight_initializer)
             features_flat = tf.reshape(features, [-1, self.D])
             features_proj = tf.matmul(features_flat, w)
             features_proj = tf.reshape(features_proj, [-1, self.L, self.D])
@@ -138,38 +141,37 @@ class Model:
         with tf.compat.v1.variable_scope('attention'):
             L = get_shape(features)[1]
 
-            w = tf.compat.v1.get_variable('w', [self.C, self.D], initializer=self.weight_initializer)
-            b = tf.compat.v1.get_variable('b', [self.D], initializer=self.const_initializer)
-            w_att = tf.compat.v1.get_variable('w_att', [self.D, 1], initializer=self.weight_initializer)
-            b_att = tf.compat.v1.get_variable('b_att', [1], initializer=self.const_initializer)
+            w = tf.compat.v1.get_variable('w', [self.C, self.D],
+                                initializer=self.weight_initializer)
+            b = tf.compat.v1.get_variable(
+                'b', [self.D], initializer=self.const_initializer)
+            w_att = tf.compat.v1.get_variable(
+                'w_att', [self.D, 1], initializer=self.weight_initializer)
+            b_att = tf.compat.v1.get_variable(
+                'b_att', [1], initializer=self.const_initializer)
 
-            h_att = tf.nn.tanh(features_proj + tf.expand_dims(tf.matmul(h, w), 1) + b)
-            out_att = tf.reshape(tf.matmul(tf.reshape(h_att, [-1, self.D]), w_att) + b_att, [-1, L])
+            h_att = tf.nn.tanh(
+                features_proj + tf.expand_dims(tf.matmul(h, w), 1) + b)
+            out_att = tf.reshape(tf.matmul(tf.reshape(
+                h_att, [-1, self.D]), w_att) + b_att, [-1, L])
             alpha = tf.nn.softmax(out_att)
-            context = tf.reduce_sum(features * tf.expand_dims(alpha, 2), 1, name='context')
+            context = tf.reduce_sum(
+                features * tf.expand_dims(alpha, 2), 1, name='context')
 
         return context, alpha
 
     def _fusion_gate(self, x, h, s_features, v_features):
         with tf.compat.v1.variable_scope('fusion_gate'):
-            w_x = tf.compat.v1.get_variable('w_x', [self.W, 1], initializer=self.weight_initializer)
-            w_h = tf.compat.v1.get_variable('w_h', [self.C, 1], initializer=self.weight_initializer)
+            w_x = tf.compat.v1.get_variable(
+                'w_x', [self.W, 1], initializer=self.weight_initializer)
+            w_h = tf.compat.v1.get_variable(
+                'w_h', [self.C, 1], initializer=self.weight_initializer)
             b = tf.compat.v1.get_variable('b', [1], initializer=self.const_initializer)
-
-            # (batvh size, max_length, word_dim)
-            # (max_length, batvh size, word_dim)
-            # [:,t,:]
-            # before
-            # (64, 1, 200) * (200,1)
-
-            # now
-            # (t, 19, 200) * (200, 1)
-            # (1, 19) +   (1,256) * (256,1)
-            # (1,19) + (1,1) + (1,1)
-            # (1,19)
-            beta = tf.nn.sigmoid(tf.matmul(x, w_x) + tf.matmul(h, w_h) + b)  # (N, 1)
-            #weighted_features = tf.multiply(beta, s_features) + tf.multiply((1. - beta), v_features)
-            weighted_features = s_features  # ignore visual features
+            beta = tf.nn.sigmoid(tf.matmul(x, w_x) +
+                                 tf.matmul(h, w_h) + b)  # (N, 1)
+            weighted_features = s_features
+            # weighted_features = tf.multiply(
+            #     beta, s_features) + tf.multiply((1. - beta), v_features)
             return weighted_features, beta
 
     def _init_lstm(self):
@@ -190,83 +192,83 @@ class Model:
 
     def _decode_lstm(self, x, h, context):
         with tf.compat.v1.variable_scope('decode_lstm'):
-            w_h = tf.compat.v1.get_variable('w_h', [self.C, self.W], initializer=self.weight_initializer)
-            b_h = tf.compat.v1.get_variable('b_h', [self.W], initializer=self.const_initializer)
-            w_out = tf.compat.v1.get_variable('w_out', [self.W, self.V], initializer=self.weight_initializer)
-            b_out = tf.compat.v1.get_variable('b_out', [self.V], initializer=self.const_initializer)
+            w_h = tf.compat.v1.get_variable(
+                'w_h', [self.C, self.W], initializer=self.weight_initializer)
+            b_h = tf.compat.v1.get_variable(
+                'b_h', [self.W], initializer=self.const_initializer)
+            w_out = tf.compat.v1.get_variable(
+                'w_out', [self.W, self.V], initializer=self.weight_initializer)
+            b_out = tf.compat.v1.get_variable(
+                'b_out', [self.V], initializer=self.const_initializer)
 
-            h = tf.layers.dropout(h, self.dropout_rate, training=self.is_training)
+            h = tf.layers.dropout(h, self.dropout_rate,
+                                  training=self.is_training)
             h_logits = tf.matmul(h, w_h) + b_h
 
-            w_ctx2out = tf.compat.v1.get_variable('w_ctx2out', [get_shape(context)[1], self.W], initializer=self.weight_initializer)
+            w_ctx2out = tf.compat.v1.get_variable('w_ctx2out', [get_shape(
+                context)[1], self.W], initializer=self.weight_initializer)
             h_logits += tf.matmul(context, w_ctx2out)
 
             h_logits += x
             h_logits = tf.nn.tanh(h_logits)
 
-            h_logits = tf.layers.dropout(h_logits, self.dropout_rate, training=self.is_training)
+            h_logits = tf.layers.dropout(
+                h_logits, self.dropout_rate, training=self.is_training)
             out_logits = tf.matmul(h_logits, w_out) + b_out
             return out_logits
 
     def _build_review_generator(self):
-        def convert_to_sentence(indices):
-            return " ".join([self.vocab[i] for i in indices])
-
-        with tf.compat.v1.variable_scope('review', reuse=tf.AUTO_REUSE):
+        with tf.compat.v1.variable_scope('review', reuse=tf.compat.v1.AUTO_REUSE):
             reviews_inputs = self.reviews[:, :self.T - 1]
-            reviews_emb = tf.nn.embedding_lookup(self.word_matrix, reviews_inputs)
+            reviews_emb = tf.nn.embedding_lookup(
+                self.word_matrix, reviews_inputs)
             reviews_labels = self.reviews[:, 1:]
             mask = tf.to_float(tf.not_equal(reviews_labels, PAD_INDEX))
 
             loss = 0.0
 
-            self.cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=self.C, name='LSTM_Cell')
+            self.cell = tf.nn.rnn_cell.BasicLSTMCell(
+                num_units=self.C, name='LSTM_Cell')
             c, h = self._init_lstm()
-            # for t in range(64):
-            #     x = reviews_emb[t, :, :]
+
+            for t in range(self.T - 1):
+                x = reviews_emb[:, t, :]
+
+                visual_context, alpha = self._attention_layer(
+                    h, self.visual_features, self.visual_projection)
+                context, beta = self._fusion_gate(
+                    x, h, self.sentiment_features, visual_context)
+
+                cell_input = tf.concat([x, context], axis=1)
+                _, (c, h) = self.cell(inputs=cell_input, state=[c, h])
+
+                logits = self._decode_lstm(x, h, context)
+
+                loss += tf.reduce_sum(
+                    tf.nn.sparse_softmax_cross_entropy_with_logits(labels=reviews_labels[:, t], logits=logits) * mask[:, t])
+            # logits_list = []
+            # for t in range(self.T - 1):
+            #     x = reviews_emb[:, t, :]
 
             #     visual_context, alpha = self._attention_layer(h, self.visual_features, self.visual_projection)
-            #     # context, beta = self._fusion_gate(x, h, self.sentiment_features, visual_context)
-            #     context = self.sentiment_features
-            
-            # # before
-            # # (64, 1, 200) , (64,1, 256)
-            # # = (64, 1, 456)
-
-            # # now
-            # # (1, 19, 200)
-            # # (1, 19, 456)
+            #     context, beta = self._fusion_gate(x, h, self.sentiment_features, visual_context)
 
             #     cell_input = tf.concat([x, context], axis=1)
             #     _, (c, h) = self.cell(inputs=cell_input, state=[c, h])
 
             #     logits = self._decode_lstm(x, h, context)
             #     logits_list.append(logits)
-            #     loss += tf.reduce_sum(
-            #         tf.nn.sparse_softmax_cross_entropy_with_logits(labels=reviews_labels[:, t], logits=logits) * mask[:, t])
-            logits_list = []
-            for t in range(self.T - 1):
-                x = reviews_emb[:, t, :]
-
-                visual_context, alpha = self._attention_layer(h, self.visual_features, self.visual_projection)
-                context, beta = self._fusion_gate(x, h, self.sentiment_features, visual_context)
-
-                cell_input = tf.concat([x, context], axis=1)
-                _, (c, h) = self.cell(inputs=cell_input, state=[c, h])
-
-                logits = self._decode_lstm(x, h, context)
-                logits_list.append(logits)
-                # loss += tf.reduce_sum(
-                #     tf.nn.sparse_softmax_cross_entropy_with_logits(labels=reviews_labels[:, t], logits=logits) * mask[:, t])
-            for n in range(64):
-                labels = convert_to_sentence(reviews_labels[n,:].eval())
-                logits = tf.argmax(logits[n],axis=1)
-                logits = convert_to_sentence(logits)
-                predict_similarity(labels,logits, self.word2vecmodel)
+            #     # loss += tf.reduce_sum(
+            #     #     tf.nn.sparse_softmax_cross_entropy_with_logits(labels=reviews_labels[:, t], logits=logits) * mask[:, t])
+            # for n in range(64):
+            #     labels = convert_to_sentence(reviews_labels[n,:].eval())
+            #     logits = tf.argmax(logits[n],axis=1)
+            #     logits = convert_to_sentence(logits)
+            #     predict_similarity(labels,logits, self.word2vecmodel)
             self.review_loss = loss / tf.reduce_sum(mask)
 
     def _build_review_sampler(self, max_decode_length):
-        with tf.compat.v1.variable_scope('review', reuse=tf.AUTO_REUSE):
+        with tf.compat.v1.variable_scope('review', reuse=tf.compat.v1.AUTO_REUSE):
             sampled_word_list = []
             beta_list = []
             alpha_list = []
@@ -278,9 +280,11 @@ class Model:
             for t in range(max_decode_length):
                 x = tf.nn.embedding_lookup(self.word_matrix, sampled_word)
 
-                visual_context, alpha = self._attention_layer(h, self.visual_features, self.visual_projection)
+                visual_context, alpha = self._attention_layer(
+                    h, self.visual_features, self.visual_projection)
                 alpha_list.append(alpha)
-                context, beta = self._fusion_gate(x, h, self.sentiment_features, visual_context)
+                context, beta = self._fusion_gate(
+                    x, h, self.sentiment_features, visual_context)
                 beta_list.append(beta)
 
                 cell_input = tf.concat([x, context], axis=1)
@@ -291,9 +295,12 @@ class Model:
                 sampled_word = tf.argmax(logits, 1)
                 sampled_word_list.append(sampled_word)
 
-            self.sampled_reviews = tf.transpose(tf.stack(sampled_word_list), (1, 0))  # (N, max_len)
-            self.alphas = tf.transpose(tf.stack(alpha_list), (1, 0, 2))  # (N, T, L)
-            self.betas = tf.transpose(tf.squeeze(tf.stack(beta_list), axis=2), (1, 0))  # (N, T)
+            self.sampled_reviews = tf.transpose(
+                tf.stack(sampled_word_list), (1, 0))  # (N, max_len)
+            self.alphas = tf.transpose(
+                tf.stack(alpha_list), (1, 0, 2))  # (N, T, L)
+            self.betas = tf.transpose(tf.squeeze(
+                tf.stack(beta_list), axis=2), (1, 0))  # (N, T)
 
     def feed_dict(self, users, items, ratings=None, prototypes=None, images=None, reviews=None, is_training=False):
         fd = {

@@ -5,7 +5,12 @@ import numpy as np
 import tensorflow as tf
 
 from reader import PAD_WORD, START_WORD, END_WORD
-
+import pandas as pd
+import tensorflow as tf
+from util import make_w2v_embeddings
+from util import split_and_zero_padding
+from util import ManDist
+from gensim.models import KeyedVectors
 FLAGS = tf.flags.FLAGS
 
 
@@ -38,6 +43,7 @@ def count_parameters(trained_vars):
 
 
 def load_glove(vocab_size, embedding_size):
+    # return np.zeros((vocab_size, embedding_size))
     print('Loading pre-trained word embeddings')
     embedding_weights = {}
     f = open('glove.6B.{}d.txt'.format(embedding_size), encoding='utf-8')
@@ -47,7 +53,8 @@ def load_glove(vocab_size, embedding_size):
         coefs = np.asarray(values[1:], dtype='float32')
         embedding_weights[word] = coefs
     f.close()
-    print('Total {} word vectors in Glove 6B {}d.'.format(len(embedding_weights), embedding_size))
+    print('Total {} word vectors in Glove 6B {}d.'.format(
+        len(embedding_weights), embedding_size))
 
     embedding_matrix = np.random.normal(0, 0.01, (vocab_size, embedding_size))
 
@@ -72,10 +79,7 @@ def load_vocabulary(data_dir):
     print('Reading vocabulary: %s' % vocab_file)
     try:
         with open(vocab_file, 'rb') as f:
-            temp = {idx: word for word, idx in pkl.load(f).items()}
-            print("vocabulary size FML", len(temp))
-            return temp
-            # return {idx: word for word, idx in pkl.load(f).items()}
+            return {idx: word for word, idx in pkl.load(f).items()}
     except IOError:
         pass
 
@@ -101,3 +105,30 @@ def decode_reviews(reviews, vocab):
                 words.append(word)
         decoded.append(words)
     return decoded
+
+
+def predict_similarity(sentence1, sentence2, word2vecmodel):
+    d = {'test_id': 0, 'question1': sentence1, 'question2': sentence2}
+    test_df = pd.DataFrame(data=d, index=[0])
+
+    for c, q in enumerate(['question1', 'question2']):
+        test_df[q + '_n'] = test_df[q]
+
+    embedding_dim = 300
+    max_seq_length = 20
+
+    test_df, embeddings = make_w2v_embeddings(
+        test_df, word2vecmodel, embedding_dim=embedding_dim, empty_w2v=False)
+
+    # Split to dicts and append zero padding.
+    X_test = split_and_zero_padding(test_df, max_seq_length)
+
+    # Make sure everything is ok
+    assert X_test['left'].shape == X_test['right'].shape
+
+    model = tf.keras.models.load_model(
+        './data/SiameseLSTM.h5', custom_objects={'ManDist': ManDist})
+    model.summary()
+
+    prediction = model.predict([X_test['left'], X_test['right']])
+    return prediction

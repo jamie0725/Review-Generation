@@ -6,3 +6,13 @@ __pycache__
 /mrg/models/
 
 .vscode/
+
+mrg/data/GoogleNews-vectors-negative300.bin.gz
+
+mrg/data/SiameseLSTM.h5
+
+*.ipynb
+
+*.h5
+
+mrg-gru/data/GoogleNews-vectors-negative300.bin.gz
