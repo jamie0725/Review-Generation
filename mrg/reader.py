@@ -219,7 +219,7 @@ class DataReader:
                         item_review_data[item].append((photo_id, photo_review))
                 else:
                     review_data[(user, item)].append((photo_id, photo_reviews))
-                    user_review_data[user].append((photo_id, photo_reviews)) 
-                    item_review_data[item].append((photo_id, photo_reviews)) 
+                    user_review_data[user].append((photo_id, photo_reviews))
+                    item_review_data[item].append((photo_id, photo_reviews))
 
-        return rating_data, review_data, user_review_data, item_review_data 
+        return rating_data, review_data, user_review_data, item_review_data
