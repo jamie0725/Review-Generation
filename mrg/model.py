@@ -92,7 +92,6 @@ class Model:
                 features = tf.nn.tanh(features, 'h{}'.format(layer))
             return features
 
-
     def _build_rating_predictor(self):
         features = self._get_features(self.user_emb, self.item_emb, self.prototype_emb)
 
@@ -127,7 +126,7 @@ class Model:
     def _visual_projection(self, features):
         with tf.compat.v1.variable_scope('review/visual_projection'):
             w = tf.compat.v1.get_variable('w', [self.D, self.D],
-                                initializer=self.weight_initializer)
+                                          initializer=self.weight_initializer)
             features_flat = tf.reshape(features, [-1, self.D])
             features_proj = tf.matmul(features_flat, w)
             features_proj = tf.reshape(features_proj, [-1, self.L, self.D])
@@ -138,7 +137,7 @@ class Model:
             L = get_shape(features)[1]
 
             w = tf.compat.v1.get_variable('w', [self.C, self.D],
-                                initializer=self.weight_initializer)
+                                          initializer=self.weight_initializer)
             b = tf.compat.v1.get_variable(
                 'b', [self.D], initializer=self.const_initializer)
             w_att = tf.compat.v1.get_variable(

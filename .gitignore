@@ -4,11 +4,7 @@ __pycache__
 .ipynb_checkpoints
 /mrg/glove*.*
 /mrg/models/
-
 .vscode/
-
 *.gz
-
 *.h5
-
 *.ipynb
