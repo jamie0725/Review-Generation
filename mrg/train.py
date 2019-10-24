@@ -97,6 +97,8 @@ def main(_):
 
     update_rating, update_review, global_step = train_fn(model)
 
+    saver = tf.compat.v1.train.Saver()
+
     log_file = open('log.txt', 'w')
     test_step = 0
 
@@ -118,6 +120,7 @@ def main(_):
 
             # Training
             for users, items, ratings in data_reader.read_train_set(FLAGS.batch_size, rating_only=True):
+                # ckpt.step.assign_add(1)
                 count += 1
                 prototypes = get_prototype_data(
                     users, items, data_reader.train_user_review, data_reader.train_item_review)
@@ -144,6 +147,7 @@ def main(_):
                 if _step % FLAGS.display_step == 0:
                     data_reader.iter.set_postfix(rating_loss=(sum_rating_loss / count),
                                                  review_loss=(sum_review_loss / count))
+
 
             # Testing
             review_gen_corpus = defaultdict(list)
@@ -245,6 +249,7 @@ def main(_):
                         review_rouge_scores['{}/r_score'.format(metric)]).mean() * 100,
                     np.array(review_rouge_scores['{}/f_score'.format(metric)]).mean() * 100))
 
+            save_path = saver.save(sess, f"tmp/model{epoch}.ckpt")
             log_info(log_file, '')
 
 
