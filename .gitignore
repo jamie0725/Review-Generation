@@ -6,6 +6,8 @@ __pycache__
 /mrg/models/
 /mrg-gru/glove*.*
 /mrg-gru/models/
+/mrg-gru-attn/glove*.*
+/mrg-gru-attn/models/
 .vscode/
 *.gz
 *.h5
