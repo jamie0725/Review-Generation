@@ -66,7 +66,7 @@ class DataReader:
     print('Total users: {}, total items: {}'.format(self.total_users, self.total_items))
 
     train_data = self._read_data(os.path.join(data_dir, 'train.pkl'))
-    test_data = self._read_data(os.path.join(data_dir, 'test.pkl'))
+    test_data = self._read_data(os.path.join(data_dir, 'valid.pkl'))
     self.train_rating, self.train_review = self._prepare_data(train_data, training=True)
     self.test_rating, self.test_review = self._prepare_data(test_data)
 
@@ -80,7 +80,7 @@ class DataReader:
     self.train_img_features = self._read_img_feature(os.path.join(self.data_dir, 'img_feats/train'),
                                                      len(self.train_id2idx.keys()))
 
-    self.test_id2idx = self._read_img_id2idx(os.path.join(self.data_dir, 'test.id_to_idx.pkl'))
+    self.test_id2idx = self._read_img_id2idx(os.path.join(self.data_dir, 'valid.id_to_idx.pkl'))
     self.test_img_features = self._read_img_feature(os.path.join(self.data_dir, 'img_feats/test'),
                                                     len(self.test_id2idx.keys()))
 
