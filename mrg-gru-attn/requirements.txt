@@ -1,0 +1,4 @@
+tensorflow-gpu>=1.12,<2.0
+hickle==3.4.3
+tqdm==4.31.1
+numpy==1.16.0
