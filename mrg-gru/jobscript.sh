@@ -21,7 +21,7 @@ virtualenv env -p `which python3`
 source env/bin/activate
 pip install -r requirements.txt
 
-python train.py
+python test.py
 
 cp log.txt $HOME/mrg-gru
 mkdir -p $HOME/mrg-gru/results

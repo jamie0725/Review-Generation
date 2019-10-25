@@ -1,0 +1,82 @@
+GENERATED:
+i ordered the chocolate cake and the chocolate cake .
+REFERENCE:
+we had four flavors : lemon , raspberry , coffee , and chocolate . their macarons ? the lemon and raspberry flavors were on par . i could not say the same for the coffee and chocolate flavors though . they neither smelled nor tasted like chocolate and coffee .
+
+GENERATED:
+i ordered the chicken and chicken sandwich and the chicken sandwich was good .
+REFERENCE:
+while we waited for pizza , we <UNK> on some delicious appetizers . pizza was delicious even leftovers reheated a few days later .
+
+GENERATED:
+the chicken was good , but the chicken was good .
+REFERENCE:
+all of our starters including the complimentary banchan were pretty good . with each meat <UNK> around $ 15 for a small amount , it felt much more expensive than what i am used to back in la .
+
+GENERATED:
+the chicken was good , but the chicken was good .
+REFERENCE:
+we ordered these items plus a couple of meat dishes to split . with each meat <UNK> around $ 15 for a small amount , it felt much more expensive than what i am used to back in la .
+
+GENERATED:
+the chicken was good , but the chicken was good .
+REFERENCE:
+we ordered these items plus a couple of meat dishes to split . with each meat <UNK> around $ 15 for a small amount , it felt much more expensive than what i am used to back in la .
+
+GENERATED:
+i had the <UNK> and the <UNK> <UNK> .
+REFERENCE:
+we went there twice but never to sit and eat inside , but to place and get to go order .
+
+GENERATED:
+i had the <UNK> and the <UNK> <UNK> .
+REFERENCE:
+of course if it s called the `` cheesecake factory '' their cheesecakes are good .
+
+GENERATED:
+the pancakes were a bit too much .
+REFERENCE:
+i ll start with the good : her crepes tasted great and the portion size was ample . sure enough , my grandma went for the strawberry crepes and i chose the banana nut french toast combo half order that came with eggs done sunny side and bacon .
+
+GENERATED:
+the pancakes were a bit too much .
+REFERENCE:
+sure enough , my grandma went for the strawberry crepes and i chose the banana nut french toast combo half order that came with eggs done sunny side and bacon . what they marketed as a half order of banana nut french toast was in reality two slices of banana nut bread dusted with powdered sugar . sorry blueberry hill , but you can take your <UNK> attempt at banana nut french toast . just raw banana nut bread passed off as something vaguely resembling french toast . not like we got some <UNK> out there with a hard on for french toast . ``
+
+GENERATED:
+the pancakes were a bit too much .
+REFERENCE:
+and go fork yourself . the giant decorative utensils on the wall were cool and the dining area relatively clean , but there seemed to be a constant <UNK> of sounds coming from the kitchen dropped plates , yelling , <UNK> pots and pans .
+
+GENERATED:
+i ordered the chicken and chicken sandwich and the chicken sandwich .
+REFERENCE:
+the real highlight of this place is getting one of the 8 window tables and enjoying this view . nomi stands for north michigan ave , and you certainly get a spectacular <UNK> 7th floor view of it , the historic and picturesque water tower , and the hancock from here .
+
+GENERATED:
+i ordered the chicken and chicken sandwich and the chicken sandwich .
+REFERENCE:
+anyway , we came here to also enjoy their restaurant week lunch menu the usual 3 courses for $ 22 pp . overall , i ll go with 4 stars for our lunch .
+
+GENERATED:
+i ordered the chicken and chicken sandwich and the chicken sandwich .
+REFERENCE:
+the real highlight of this place is getting one of the 8 window tables and enjoying this view . nomi stands for north michigan ave , and you certainly get a spectacular <UNK> 7th floor view of it , the historic and picturesque water tower , and the hancock from here .
+
+GENERATED:
+i ordered the chicken and chicken sandwich and the chicken sandwich .
+REFERENCE:
+the real highlight of this place is getting one of the 8 window tables and enjoying this view . nomi stands for north michigan ave , and you certainly get a spectacular <UNK> 7th floor view of it , the historic and picturesque water tower , and the hancock from here .
+
+
+Rating prediction results: MAE=1.319, RMSE=1.639
+
+Review generation results:
+- Photo level: BLEU-scores = 27.09, 14.74, 11.60, 10.62
+- Review level: BLEU-scores = 41.58, 21.38, 16.20, 14.56
+- Photo level: rouge_1 = 29.41, 14.43, 18.75
+- Review level: rouge_1 = 28.54, 17.16, 21.15
+- Photo level: rouge_2 = 1.02, 0.65, 0.79
+- Review level: rouge_2 = 2.38, 1.52, 1.85
+- Photo level: rouge_l = 20.09, 13.25, 13.86
+- Review level: rouge_l = 19.30, 17.06, 17.23
