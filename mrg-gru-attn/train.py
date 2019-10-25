@@ -81,8 +81,12 @@ def train_fn(model):
 
     grad_rating = optimizer.compute_gradients(model.rating_loss)
     grad_review = optimizer.compute_gradients(model.review_loss)
-    clipped_grad_rating = [(tf.clip_by_value(grad, -5., 5.), var) for grad, var in grad_rating]
-    clipeed_grad_review = [(tf.clip_by_value(grad, -5., 5.), var) for grad, var in grad_review]
+    def ClipIfNotNone(grad):
+            if grad is None:
+                return grad
+            return tf.clip_by_value(grad, -1., 1.)
+    clipped_grad_rating = [(ClipIfNotNone(grad), var) for grad, var in grad_rating]
+    clipeed_grad_review = [(ClipIfNotNone(grad), var) for grad, var in grad_review]
     update_rating = optimizer.apply_gradients(clipped_grad_rating, name='update_rating', global_step=global_step)
     update_review = optimizer.apply_gradients(clipeed_grad_review, name='update_review')
 
