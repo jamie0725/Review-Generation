@@ -69,6 +69,10 @@ class DataReader:
     test_data = self._read_data(os.path.join(data_dir, 'valid.pkl'))
     self.train_rating, self.train_review = self._prepare_data(train_data, n_reviews, training=True)
     self.test_rating, self.test_review = self._prepare_data(test_data, n_reviews, generating=True)
+    real_test_data = self._read_data(os.path.join(data_dir, 'test.pkl'))
+    self.train_rating, self.train_review = self._prepare_data(train_data, training=True)
+    self.test_rating, self.test_review = self._prepare_data(test_data)
+    self.real_test_rating, self.real_test_review = self._prepare_data(real_test_data)
 
     self.global_rating = np.asarray(self.train_rating)[:, 2].mean()
     print('Global rating: {:.2f}'.format(self.global_rating))
@@ -84,6 +88,10 @@ class DataReader:
     self.test_img_features = self._read_img_feature(os.path.join(self.data_dir, 'img_feats/test'),
                                                     len(self.test_id2idx.keys()))
 
+    self.real_test_id2idx = self._read_img_id2idx(os.path.join(self.data_dir, 'test.id_to_idx.pkl'))
+    self.real_test_img_features = self._read_img_feature(os.path.join(self.data_dir, 'img_feats/test'),
+                                                    len(self.real_test_id2idx.keys()))                                               
+
   def read_train_set(self, batch_size, rating_only=False):
     if self.is_shuffle:
       random.shuffle(self.train_rating)
@@ -95,6 +103,11 @@ class DataReader:
     if rating_only:
       return self.batch_iterator(self.test_rating, batch_size, True, desc='Testing')
     return self.batch_iterator(self.test_review, batch_size, desc='Testing')
+
+  def read_real_test_set(self, batch_size, rating_only=False):
+    if rating_only:
+      return self.batch_iterator(self.real_test_rating, batch_size, True, desc='Testing')
+    return self.batch_iterator(self.real_test_review, batch_size, desc='Testing')
 
   def batch_iterator(self, data, batch_size, rating_only=False, desc=None):
     num_batches = int(math.ceil(len(data) / batch_size))
