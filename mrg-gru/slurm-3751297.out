@@ -1,116 +1,0 @@
-ERROR: Unable to locate a modulefile for 'torque/default'
-ERROR: Unable to locate a modulefile for 'oldwheezy/1.0'
-ERROR: Unable to locate a modulefile for 'licenses/1.0'
-ERROR: Unable to locate a modulefile for 'stdenv/1.3'
-ERROR: Unable to locate a modulefile for 'libgfortran/32/1'
-Using base prefix '/sw/arch/Debian9/EB_production/2019/software/Python/3.6.6-foss-2018b'
-New python executable in /scratch/mrg-gru/env/bin/python3
-Also creating executable in /scratch/mrg-gru/env/bin/python
-Installing setuptools, pip, wheel...done.
-Running virtualenv with interpreter /sw/arch/Debian9/EB_production/2019/software/Python/3.6.6-foss-2018b/bin/python3
-Collecting tensorflow-gpu<2.0,>=1.12
-  Using cached https://files.pythonhosted.org/packages/a5/ad/933140e74973fb917a194ab814785e7c23680ca5dee6d663a509fe9579b6/tensorflow_gpu-1.15.0-cp36-cp36m-manylinux2010_x86_64.whl
-Collecting hickle==3.4.3
-  Using cached https://files.pythonhosted.org/packages/da/e5/bf2c8f13d54d8d36bcbe0e122d6a488f09f151d4af0da986eb7cd67d5f56/hickle-3.4.3-py3-none-any.whl
-Collecting tqdm==4.31.1
-  Using cached https://files.pythonhosted.org/packages/6c/4b/c38b5144cf167c4f52288517436ccafefe9dc01b8d1c190e18a6b154cd4a/tqdm-4.31.1-py2.py3-none-any.whl
-Collecting numpy==1.16.0
-  Using cached https://files.pythonhosted.org/packages/7b/74/54c5f9bb9bd4dae27a61ec1b39076a39d359b3fb7ba15da79ef23858a9d8/numpy-1.16.0-cp36-cp36m-manylinux1_x86_64.whl
-Collecting tensorflow-estimator==1.15.1
-  Using cached https://files.pythonhosted.org/packages/de/62/2ee9cd74c9fa2fa450877847ba560b260f5d0fb70ee0595203082dafcc9d/tensorflow_estimator-1.15.1-py2.py3-none-any.whl
-Collecting tensorboard<1.16.0,>=1.15.0
-  Using cached https://files.pythonhosted.org/packages/1e/e9/d3d747a97f7188f48aa5eda486907f3b345cd409f0a0850468ba867db246/tensorboard-1.15.0-py3-none-any.whl
-Collecting protobuf>=3.6.1
-  Using cached https://files.pythonhosted.org/packages/a8/52/d8d2dbff74b8bf517c42db8d44c3f9ef6555e6f5d6caddfa3f207b9143df/protobuf-3.10.0-cp36-cp36m-manylinux1_x86_64.whl
-Processing /home/lgpu0257/.cache/pip/wheels/5c/2e/7e/a1d4d4fcebe6c381f378ce7743a3ced3699feb89bcfbdadadd/gast-0.2.2-cp36-none-any.whl
-Collecting astor>=0.6.0
-  Using cached https://files.pythonhosted.org/packages/d1/4f/950dfae467b384fc96bc6469de25d832534f6b4441033c39f914efd13418/astor-0.8.0-py2.py3-none-any.whl
-Collecting six>=1.10.0
-  Using cached https://files.pythonhosted.org/packages/73/fb/00a976f728d0d1fecfe898238ce23f502a721c0ac0ecfedb80e0d88c64e9/six-1.12.0-py2.py3-none-any.whl
-Collecting google-pasta>=0.1.6
-  Using cached https://files.pythonhosted.org/packages/d0/33/376510eb8d6246f3c30545f416b2263eee461e40940c2a4413c711bdf62d/google_pasta-0.1.7-py3-none-any.whl
-Processing /home/lgpu0257/.cache/pip/wheels/7c/06/54/bc84598ba1daf8f970247f550b175aaaee85f68b4b0c5ab2c6/termcolor-1.1.0-cp36-none-any.whl
-Processing /home/lgpu0257/.cache/pip/wheels/d7/de/2e/efa132238792efb6459a96e85916ef8597fcb3d2ae51590dfd/wrapt-1.11.2-cp36-cp36m-linux_x86_64.whl
-Collecting keras-applications>=1.0.8
-  Using cached https://files.pythonhosted.org/packages/71/e3/19762fdfc62877ae9102edf6342d71b28fbfd9dea3d2f96a882ce099b03f/Keras_Applications-1.0.8-py3-none-any.whl
-Requirement already satisfied: wheel>=0.26 in ./env/lib/python3.6/site-packages (from tensorflow-gpu<2.0,>=1.12->-r requirements.txt (line 1)) (0.33.6)
-Collecting grpcio>=1.8.6
-  Using cached https://files.pythonhosted.org/packages/30/54/c9810421e41ec0bca2228c6f06b1b1189b196b69533cbcac9f71b44727f8/grpcio-1.24.3-cp36-cp36m-manylinux2010_x86_64.whl
-Processing /home/lgpu0257/.cache/pip/wheels/a7/15/a0/0a0561549ad11cdc1bc8fa1191a353efd30facf6bfb507aefc/absl_py-0.8.1-cp36-none-any.whl
-Processing /home/lgpu0257/.cache/pip/wheels/2c/b1/94/43d03e130b929aae7ba3f8d15cbd7bc0d1cb5bb38a5c721833/opt_einsum-3.1.0-cp36-none-any.whl
-Collecting keras-preprocessing>=1.0.5
-  Using cached https://files.pythonhosted.org/packages/28/6a/8c1f62c37212d9fc441a7e26736df51ce6f0e38455816445471f10da4f0a/Keras_Preprocessing-1.1.0-py2.py3-none-any.whl
-Collecting h5py
-  Using cached https://files.pythonhosted.org/packages/60/06/cafdd44889200e5438b897388f3075b52a8ef01f28a17366d91de0fa2d05/h5py-2.10.0-cp36-cp36m-manylinux1_x86_64.whl
-Collecting markdown>=2.6.8
-  Using cached https://files.pythonhosted.org/packages/c0/4e/fd492e91abdc2d2fcb70ef453064d980688762079397f779758e055f6575/Markdown-3.1.1-py2.py3-none-any.whl
-Collecting werkzeug>=0.11.15
-  Using cached https://files.pythonhosted.org/packages/ce/42/3aeda98f96e85fd26180534d36570e4d18108d62ae36f87694b476b83d6f/Werkzeug-0.16.0-py2.py3-none-any.whl
-Requirement already satisfied: setuptools>=41.0.0 in ./env/lib/python3.6/site-packages (from tensorboard<1.16.0,>=1.15.0->tensorflow-gpu<2.0,>=1.12->-r requirements.txt (line 1)) (41.4.0)
-Installing collected packages: tensorflow-estimator, six, absl-py, markdown, werkzeug, numpy, protobuf, grpcio, tensorboard, gast, astor, google-pasta, termcolor, wrapt, h5py, keras-applications, opt-einsum, keras-preprocessing, tensorflow-gpu, hickle, tqdm
-Successfully installed absl-py-0.8.1 astor-0.8.0 gast-0.2.2 google-pasta-0.1.7 grpcio-1.24.3 h5py-2.10.0 hickle-3.4.3 keras-applications-1.0.8 keras-preprocessing-1.1.0 markdown-3.1.1 numpy-1.16.0 opt-einsum-3.1.0 protobuf-3.10.0 six-1.12.0 tensorboard-1.15.0 tensorflow-estimator-1.15.1 tensorflow-gpu-1.15.0 termcolor-1.1.0 tqdm-4.31.1 werkzeug-0.16.0 wrapt-1.11.2
-0it [00:00, ?it/s]
-0it [00:00, ?it/s]
-0it [00:00, ?it/s]
-WARNING:tensorflow:
-The TensorFlow contrib module will not be included in TensorFlow 2.0.
-For more information, please see:
-  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
-  * https://github.com/tensorflow/addons
-  * https://github.com/tensorflow/io (for I/O related ops)
-If you depend on functionality not listed there, please file an issue.
-
-W1025 17:08:56.803557 47066670996160 lazy_loader.py:50] 
-The TensorFlow contrib module will not be included in TensorFlow 2.0.
-For more information, please see:
-  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
-  * https://github.com/tensorflow/addons
-  * https://github.com/tensorflow/io (for I/O related ops)
-If you depend on functionality not listed there, please file an issue.
-
-WARNING:tensorflow:From /scratch/mrg-gru/model.py:113: The name tf.GraphKeys is deprecated. Please use tf.compat.v1.GraphKeys instead.
-
-W1025 17:09:34.839225 47066670996160 module_wrapper.py:139] From /scratch/mrg-gru/model.py:113: The name tf.GraphKeys is deprecated. Please use tf.compat.v1.GraphKeys instead.
-
-WARNING:tensorflow:From /scratch/mrg-gru/model.py:114: The name tf.variables_initializer is deprecated. Please use tf.compat.v1.variables_initializer instead.
-
-W1025 17:09:34.840025 47066670996160 module_wrapper.py:139] From /scratch/mrg-gru/model.py:114: The name tf.variables_initializer is deprecated. Please use tf.compat.v1.variables_initializer instead.
-
-WARNING:tensorflow:From test.py:92: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
-
-W1025 17:09:38.440749 47066670996160 module_wrapper.py:139] From test.py:92: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
-
-INFO:tensorflow:Restoring parameters from results/model20.ckpt
-I1025 17:09:38.882894 47066670996160 saver.py:1284] Restoring parameters from results/model20.ckpt
-Testing:   0%|          | 0/55 [00:00<?, ?it/s]Testing:   2%|1         | 1/55 [00:04<03:41,  4.09s/it]Testing:   4%|3         | 2/55 [00:04<02:45,  3.12s/it]Testing:   5%|5         | 3/55 [00:05<02:07,  2.46s/it]Testing:   7%|7         | 4/55 [00:06<01:40,  1.97s/it]Testing:   9%|9         | 5/55 [00:07<01:22,  1.65s/it]Testing:  11%|#         | 6/55 [00:08<01:09,  1.41s/it]Testing:  13%|#2        | 7/55 [00:09<00:59,  1.25s/it]Testing:  15%|#4        | 8/55 [00:10<00:53,  1.13s/it]Testing:  16%|#6        | 9/55 [00:11<00:48,  1.06s/it]Testing:  18%|#8        | 10/55 [00:12<00:46,  1.04s/it]Testing:  20%|##        | 11/55 [00:12<00:43,  1.02it/s]Testing:  22%|##1       | 12/55 [00:13<00:41,  1.03it/s]Testing:  24%|##3       | 13/55 [00:14<00:39,  1.07it/s]Testing:  25%|##5       | 14/55 [00:15<00:37,  1.09it/s]Testing:  27%|##7       | 15/55 [00:16<00:36,  1.10it/s]Testing:  29%|##9       | 16/55 [00:17<00:34,  1.13it/s]Testing:  31%|###       | 17/55 [00:18<00:33,  1.14it/s]Testing:  33%|###2      | 18/55 [00:19<00:32,  1.15it/s]Testing:  35%|###4      | 19/55 [00:19<00:31,  1.15it/s]Testing:  36%|###6      | 20/55 [00:20<00:30,  1.16it/s]Testing:  38%|###8      | 21/55 [00:21<00:31,  1.08it/s]Testing:  40%|####      | 22/55 [00:22<00:30,  1.09it/s]Testing:  42%|####1     | 23/55 [00:23<00:28,  1.11it/s]Testing:  44%|####3     | 24/55 [00:24<00:27,  1.12it/s]Testing:  45%|####5     | 25/55 [00:25<00:26,  1.14it/s]Testing:  47%|####7     | 26/55 [00:26<00:25,  1.16it/s]Testing:  49%|####9     | 27/55 [00:26<00:23,  1.17it/s]Testing:  51%|#####     | 28/55 [00:27<00:23,  1.16it/s]Testing:  53%|#####2    | 29/55 [00:28<00:22,  1.17it/s]Testing:  55%|#####4    | 30/55 [00:29<00:21,  1.16it/s]Testing:  56%|#####6    | 31/55 [00:30<00:20,  1.14it/s]Testing:  58%|#####8    | 32/55 [00:31<00:20,  1.14it/s]Testing:  60%|######    | 33/55 [00:32<00:18,  1.16it/s]Testing:  62%|######1   | 34/55 [00:33<00:18,  1.16it/s]Testing:  64%|######3   | 35/55 [00:33<00:17,  1.15it/s]Testing:  65%|######5   | 36/55 [00:34<00:16,  1.15it/s]Testing:  67%|######7   | 37/55 [00:35<00:15,  1.16it/s]Testing:  69%|######9   | 38/55 [00:36<00:14,  1.15it/s]Testing:  71%|#######   | 39/55 [00:37<00:14,  1.11it/s]Testing:  73%|#######2  | 40/55 [00:38<00:13,  1.13it/s]Testing:  75%|#######4  | 41/55 [00:39<00:12,  1.13it/s]Testing:  76%|#######6  | 42/55 [00:40<00:11,  1.14it/s]Testing:  78%|#######8  | 43/55 [00:40<00:10,  1.14it/s]Testing:  80%|########  | 44/55 [00:41<00:09,  1.14it/s]Testing:  82%|########1 | 45/55 [00:42<00:08,  1.13it/s]Testing:  84%|########3 | 46/55 [00:43<00:07,  1.14it/s]Testing:  85%|########5 | 47/55 [00:44<00:06,  1.15it/s]Testing:  87%|########7 | 48/55 [00:45<00:06,  1.13it/s]Testing:  89%|########9 | 49/55 [00:46<00:05,  1.13it/s]Testing:  91%|######### | 50/55 [00:47<00:04,  1.14it/s]Testing:  93%|#########2| 51/55 [00:47<00:03,  1.15it/s]Testing:  95%|#########4| 52/55 [00:48<00:02,  1.16it/s]Testing:  96%|#########6| 53/55 [00:49<00:01,  1.16it/s]Testing:  98%|#########8| 54/55 [00:50<00:00,  1.10it/s]Testing: 100%|##########| 55/55 [00:51<00:00,  1.14it/s]
-Reading vocabulary: data/vocab.pkl
-Reading data: data/users.txt
-Reading data: data/items.txt
-Total users: 2909, total items: 2726
-Reading data: data/train.pkl
-Reading data: data/valid.pkl
-Reading data: data/test.pkl
-Global rating: 3.97
-Reading image id_to_idx: data/train.id_to_idx.pkl
-Reading image features: data/img_feats/train
-Reading image id_to_idx: data/valid.id_to_idx.pkl
-Reading image features: data/img_feats/test
-Reading image id_to_idx: data/test.id_to_idx.pkl
-Reading image features: data/img_feats/test
-Loading pre-trained word embeddings
-Total 400000 word vectors in Glove 6B 200d.
-Number of OOV words: 915
-Model succesfully restored
-
-Rating prediction results: MAE=0.778, RMSE=1.008
-
-Review generation results:
-- Photo level: BLEU-scores = 29.80, 16.27, 12.29, 10.78
-- Review level: BLEU-scores = 37.50, 20.44, 14.94, 12.78
-- Photo level: rouge_1 = 32.74, 19.84, 23.16
-- Review level: rouge_1 = 33.03, 19.35, 22.89
-- Photo level: rouge_2 = 3.16, 1.94, 2.22
-- Review level: rouge_2 = 2.90, 1.74, 2.02
-- Photo level: rouge_l = 23.58, 18.74, 17.44
-- Review level: rouge_l = 23.65, 18.22, 17.14
-cp: cannot stat 'tmp/*': No such file or directory
