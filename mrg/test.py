@@ -16,6 +16,7 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 # ==================================================
 tf.flags.DEFINE_string("ckpt_dir", "results/model20.ckpt",
                         """Path to the directory that contains the checkpoints""")
+                        
 tf.flags.DEFINE_string("data_dir", "data",
                        """Path to the data directory""")
 
@@ -92,16 +93,16 @@ def main(_):
       review_rouge_scores = defaultdict(list)
 
       sess.run(model.init_metrics)
-      for users, items, ratings in data_reader.read_test_set(FLAGS.batch_size, rating_only=True):
+      for users, items, ratings in data_reader.read_real_test_set(FLAGS.batch_size, rating_only=True):
         test_step += 1
 
         fd = model.feed_dict(users, items, ratings)
         sess.run(model.update_metrics, feed_dict=fd)
 
         review_users, review_items, review_ratings, photo_ids, reviews = get_review_data(users, items, ratings,
-                                                                                         data_reader.test_review)
-        img_idx = [data_reader.test_id2idx[photo_id] for photo_id in photo_ids]
-        images = data_reader.test_img_features[img_idx]
+                                                                                         data_reader.real_test_review)
+        img_idx = [data_reader.real_test_id2idx[photo_id] for photo_id in photo_ids]
+        images = data_reader.real_test_img_features[img_idx]
 
         fd = model.feed_dict(users=review_users, items=review_items, images=images)
         _reviews, _alphas, _betas = sess.run([model.sampled_reviews, model.alphas, model.betas], feed_dict=fd)
