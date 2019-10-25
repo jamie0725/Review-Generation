@@ -97,7 +97,7 @@ def main(_):
 
     update_rating, update_review, global_step = train_fn(model)
 
-    saver = tf.compat.v1.train.Saver()
+    saver = tf.compat.v1.train.Saver(max_to_keep=10)
 
     log_file = open('log.txt', 'w')
     test_step = 0

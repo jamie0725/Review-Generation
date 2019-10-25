@@ -8,7 +8,10 @@ from reader import DataReader, get_review_data, batch_review_normalize
 from utils import count_parameters, load_vocabulary, decode_reviews, log_info
 from bleu import compute_bleu
 from rouge import rouge
-
+import os
+from tensorflow.python.util import deprecation
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+deprecation._PRINT_DEPRECATION_WARNINGS = False
 # Parameters
 # ==================================================
 tf.flags.DEFINE_string("data_dir", "data",
@@ -89,7 +92,7 @@ def main(_):
 
   update_rating, update_review, global_step = train_fn(model)
 
-  saver = tf.compat.v1.train.Saver()
+  saver = tf.compat.v1.train.Saver(max_to_keep=10)
 
   log_file = open('log.txt', 'w')
   test_step = 0
@@ -126,8 +129,6 @@ def main(_):
         if _step % FLAGS.display_step == 0:
           data_reader.iter.set_postfix(rating_loss=(sum_rating_loss / count),
                                        review_loss=(sum_review_loss / count))
-
-        break
 
       # Testing
       review_gen_corpus = defaultdict(list)

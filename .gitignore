@@ -12,3 +12,4 @@ __pycache__
 *.gz
 *.h5
 *.ipynb
+mrg-gru/results/
