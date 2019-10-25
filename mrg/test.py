@@ -64,7 +64,13 @@ def check_scope_review(var_name):
 
 def main(_):
   vocab = load_vocabulary(FLAGS.data_dir)
-  data_reader = DataReader(FLAGS.data_dir)
+
+  # if generating
+  data_reader = DataReader(FLAGS.data_dir, n_reviews=5, generating=True)
+
+  # if testing
+  # data_reader = DataReader(FLAGS.data_dir, n_reviews=5, generating=False)
+
 
   model = Model(total_users=data_reader.total_users, total_items=data_reader.total_items,
                 global_rating=data_reader.global_rating, num_factors=FLAGS.num_factors,
@@ -109,6 +115,10 @@ def main(_):
 
         gen_reviews = decode_reviews(_reviews, vocab)
         ref_reviews = [decode_reviews(batch_review_normalize(ref), vocab) for ref in reviews]
+
+        for gen, ref in zip(gen_reviews, ref_reviews):
+          print("GENERATED:"," ".join(gen))
+          print("REFERENCE:"," ".join([" ".join(sentence) for sentence in ref]), "\n")
 
         for user, item, gen, refs in zip(review_users, review_items, gen_reviews, ref_reviews):
           review_gen_corpus[(user, item)].append(gen)

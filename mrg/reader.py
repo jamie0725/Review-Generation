@@ -58,7 +58,7 @@ def batch_review_normalize(reviews, max_length=None):
 
 class DataReader:
 
-  def __init__(self, data_dir, n_reviews, training_shuffle=True):
+  def __init__(self, data_dir, n_reviews=5, generating=False, training_shuffle=True):
     self.data_dir = data_dir
     self.is_shuffle = training_shuffle
     self.total_users = len(self._read_ids(os.path.join(data_dir, 'users.txt')))
@@ -67,12 +67,11 @@ class DataReader:
 
     train_data = self._read_data(os.path.join(data_dir, 'train.pkl'))
     test_data = self._read_data(os.path.join(data_dir, 'valid.pkl'))
-    self.train_rating, self.train_review = self._prepare_data(train_data, n_reviews, training=True)
-    self.test_rating, self.test_review = self._prepare_data(test_data, n_reviews, generating=True)
     real_test_data = self._read_data(os.path.join(data_dir, 'test.pkl'))
-    self.train_rating, self.train_review = self._prepare_data(train_data, training=True)
-    self.test_rating, self.test_review = self._prepare_data(test_data)
-    self.real_test_rating, self.real_test_review = self._prepare_data(real_test_data)
+
+    self.train_rating, self.train_review = self._prepare_data(train_data, n_reviews, training=True)
+    self.test_rating, self.test_review = self._prepare_data(test_data, n_reviews, generating)
+    self.real_test_rating, self.real_test_review = self._prepare_data(real_test_data, n_reviews, generating)
 
     self.global_rating = np.asarray(self.train_rating)[:, 2].mean()
     print('Global rating: {:.2f}'.format(self.global_rating))
@@ -177,7 +176,7 @@ class DataReader:
     return data
 
   @staticmethod
-  def _prepare_data(data, n_reviews, generating=False, training=False):
+  def _prepare_data(data, n_reviews= 5, generating = False, training=False):
     rating_data = []
     review_data = defaultdict(list)
 
@@ -194,6 +193,6 @@ class DataReader:
         else:
           review_data[(user, item)].append((photo_id, photo_reviews))
       if not training:
-        if generating and n_reviews == 5:
+        if generating and c == n_reviews:
           break
     return rating_data, review_data
