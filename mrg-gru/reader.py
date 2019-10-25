@@ -86,7 +86,7 @@ def batch_review_normalize(reviews, max_length=None):
 
 class DataReader:
 
-    def __init__(self, data_dir, training_shuffle=True):
+    def __init__(self, data_dir, n_reviews=5, generating=False, training_shuffle=True):
         self.data_dir = data_dir
         self.is_shuffle = training_shuffle
         self.total_users = len(self._read_ids(
@@ -104,7 +104,7 @@ class DataReader:
         self.test_rating, self.test_review, self.test_user_review, self.test_item_review = self._prepare_data(
             test_data)
         self.real_test_rating, self.real_test_review, self.real_test_user_review, self.real_test_item_review = self._prepare_data(
-            real_test_data)
+            real_test_data, n_reviews, generating)
 
         self.global_rating = np.asarray(self.train_rating)[:, 2].mean()
         print('Global rating: {:.2f}'.format(self.global_rating))
@@ -212,12 +212,12 @@ class DataReader:
         return data
 
     @staticmethod
-    def _prepare_data(data, training=False):
+    def _prepare_data(data, n_reviews= 5, generating = False, training=False):
         rating_data = []
         review_data = defaultdict(list)
         user_review_data = defaultdict(list)
         item_review_data = defaultdict(list)
-        for exp in data:
+        for c, exp in enumerate(data):
             user = int(exp['User'])
             item = int(exp['Item'])
             rating = exp['Rating']
@@ -234,5 +234,7 @@ class DataReader:
                     review_data[(user, item)].append((photo_id, photo_reviews))
                     user_review_data[user].append((photo_id, photo_reviews))
                     item_review_data[item].append((photo_id, photo_reviews))
-
+            if not training:
+                if generating and c == n_reviews:
+                    break
         return rating_data, review_data, user_review_data, item_review_data

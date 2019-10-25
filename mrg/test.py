@@ -45,6 +45,9 @@ tf.flags.DEFINE_integer("display_step", 10,
 tf.flags.DEFINE_boolean("allow_soft_placement", True,
                         """Allow device soft device placement""")
 
+tf.flags.DEFINE_boolean("generating", False,
+                        """Allow to generate reviews """)
+
 FLAGS = tf.flags.FLAGS
 
 
@@ -64,14 +67,10 @@ def check_scope_review(var_name):
 
 def main(_):
   vocab = load_vocabulary(FLAGS.data_dir)
-
-  # if generating
-  data_reader = DataReader(FLAGS.data_dir, n_reviews=5, generating=True)
-
-  # if testing
-  # data_reader = DataReader(FLAGS.data_dir, n_reviews=5, generating=False)
-
-
+  if FLAGS.generating:
+    data_reader = DataReader(FLAGS.data_dir, n_reviews=5, generating=True)
+  else:
+    data_reader = DataReader(FLAGS.data_dir)
   model = Model(total_users=data_reader.total_users, total_items=data_reader.total_items,
                 global_rating=data_reader.global_rating, num_factors=FLAGS.num_factors,
                 img_dims=[196, 512], vocab_size=len(vocab), word_dim=FLAGS.word_dim,
@@ -116,9 +115,12 @@ def main(_):
         gen_reviews = decode_reviews(_reviews, vocab)
         ref_reviews = [decode_reviews(batch_review_normalize(ref), vocab) for ref in reviews]
 
-        for gen, ref in zip(gen_reviews, ref_reviews):
-          print("GENERATED:"," ".join(gen))
-          print("REFERENCE:"," ".join([" ".join(sentence) for sentence in ref]), "\n")
+        if FLAGS.generating:
+          for gen, ref in zip(gen_reviews, ref_reviews):
+            gen_str = "GENERATED:\n"+" ".join(gen)
+            ref_str = "REFERENCE:\n"+" ".join([" ".join(sentence) for sentence in ref])+"\n"
+            log_info(log_file,gen_str)
+            log_info(log_file,ref_str)
 
         for user, item, gen, refs in zip(review_users, review_items, gen_reviews, ref_reviews):
           review_gen_corpus[(user, item)].append(gen)
