@@ -79,9 +79,12 @@ def train_fn(model):
                                if check_scope_review(v.name) and 'bias' not in v.name])
     model.review_loss = model.review_loss + FLAGS.lambda_reg * review_l2_loss
 
-    update_rating = optimizer.minimize(
-        model.rating_loss, name='update_rating', global_step=global_step)
-    update_review = optimizer.minimize(model.review_loss, name='update_review')
+    grad_rating = optimizer.compute_gradients(model.rating_loss)
+    grad_review = optimizer.compute_gradients(model.review_loss)
+    clipped_grad_rating = [(tf.clip_by_value(grad, -5., 5.), var) for grad, var in grad_rating]
+    clipeed_grad_review = [(tf.clip_by_value(grad, -5., 5.), var) for grad, var in grad_review]
+    update_rating = optimizer.apply_gradients(clipped_grad_rating, name='update_rating', global_step=global_step)
+    update_review = optimizer.apply_gradients(clipeed_grad_review, name='update_review')
 
     return update_rating, update_review, global_step
 
@@ -147,7 +150,6 @@ def main(_):
                 if _step % FLAGS.display_step == 0:
                     data_reader.iter.set_postfix(rating_loss=(sum_rating_loss / count),
                                                  review_loss=(sum_review_loss / count))
-
 
             # Testing
             review_gen_corpus = defaultdict(list)

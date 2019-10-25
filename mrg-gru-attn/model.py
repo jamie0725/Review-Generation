@@ -77,12 +77,8 @@ class Model:
             hidden_size = self.F
             inputs_emb = tf.nn.embedding_lookup(self.word_matrix, inputs)
             cell = tf.nn.rnn_cell.GRUCell(hidden_size)
-            # print('Cell size', cell.state_size)
             cell = tf.contrib.rnn.AttentionCellWrapper(cell, attn_length=4)
-            # print('Cell size', cell.state_size)
             output, h_state = tf.nn.dynamic_rnn(cell, inputs_emb, dtype=tf.float32)
-            # print('LOL', output.shape, len(h_state))
-            # state, attn, attn_state = h_state
             return output[:, -1, :]
 
     def _get_features(self, user_emb, item_emb, prototype_emb, num_layers=1):
