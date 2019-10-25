@@ -1,2 +1,300 @@
 
 Epoch: 1/20
+
+Rating prediction results: MAE=0.711, RMSE=0.911
+
+Review generation results:
+- Photo level: BLEU-scores = 10.58, 6.82, 6.06, 5.80
+- Review level: BLEU-scores = 12.16, 7.44, 6.49, 6.15
+- Photo level: rouge_1 = 63.85, 4.45, 8.20
+- Review level: rouge_1 = 64.68, 4.38, 8.09
+- Photo level: rouge_2 = 0.05, 0.00, 0.00
+- Review level: rouge_2 = 0.10, 0.00, 0.01
+- Photo level: rouge_l = 5.02, 5.68, 4.48
+- Review level: rouge_l = 5.16, 5.69, 4.61
+
+
+Epoch: 2/20
+
+Rating prediction results: MAE=0.729, RMSE=0.920
+
+Review generation results:
+- Photo level: BLEU-scores = 10.58, 6.82, 6.06, 5.80
+- Review level: BLEU-scores = 12.16, 7.44, 6.49, 6.15
+- Photo level: rouge_1 = 63.85, 4.45, 8.20
+- Review level: rouge_1 = 64.68, 4.38, 8.09
+- Photo level: rouge_2 = 0.05, 0.00, 0.00
+- Review level: rouge_2 = 0.10, 0.00, 0.01
+- Photo level: rouge_l = 5.02, 5.68, 4.48
+- Review level: rouge_l = 5.16, 5.69, 4.61
+
+
+Epoch: 3/20
+
+Rating prediction results: MAE=0.746, RMSE=0.947
+
+Review generation results:
+- Photo level: BLEU-scores = 10.58, 6.82, 6.06, 5.80
+- Review level: BLEU-scores = 12.16, 7.44, 6.49, 6.15
+- Photo level: rouge_1 = 63.85, 4.45, 8.20
+- Review level: rouge_1 = 64.68, 4.38, 8.09
+- Photo level: rouge_2 = 0.05, 0.00, 0.00
+- Review level: rouge_2 = 0.10, 0.00, 0.01
+- Photo level: rouge_l = 5.02, 5.68, 4.48
+- Review level: rouge_l = 5.16, 5.69, 4.61
+
+
+Epoch: 4/20
+
+Rating prediction results: MAE=0.744, RMSE=0.950
+
+Review generation results:
+- Photo level: BLEU-scores = 14.74, 8.61, 7.13, 6.52
+- Review level: BLEU-scores = 17.88, 9.90, 7.94, 7.13
+- Photo level: rouge_1 = 37.04, 7.55, 12.14
+- Review level: rouge_1 = 38.01, 7.57, 12.26
+- Photo level: rouge_2 = 2.48, 0.72, 1.07
+- Review level: rouge_2 = 2.35, 0.69, 1.02
+- Photo level: rouge_l = 7.85, 8.92, 7.07
+- Review level: rouge_l = 8.17, 9.10, 7.37
+
+
+Epoch: 5/20
+
+Rating prediction results: MAE=0.756, RMSE=0.972
+
+Review generation results:
+- Photo level: BLEU-scores = 26.55, 13.97, 10.06, 8.55
+- Review level: BLEU-scores = 32.29, 16.83, 11.66, 9.65
+- Photo level: rouge_1 = 36.10, 16.10, 20.93
+- Review level: rouge_1 = 35.87, 15.83, 20.68
+- Photo level: rouge_2 = 4.56, 2.00, 2.62
+- Review level: rouge_2 = 4.20, 1.86, 2.42
+- Photo level: rouge_l = 16.91, 17.62, 14.58
+- Review level: rouge_l = 16.65, 17.33, 14.47
+
+
+Epoch: 6/20
+
+Rating prediction results: MAE=0.762, RMSE=0.976
+
+Review generation results:
+- Photo level: BLEU-scores = 34.89, 17.42, 12.37, 10.48
+- Review level: BLEU-scores = 43.15, 21.48, 14.69, 12.11
+- Photo level: rouge_1 = 35.92, 23.93, 27.07
+- Review level: rouge_1 = 36.08, 23.84, 27.13
+- Photo level: rouge_2 = 3.52, 2.14, 2.49
+- Review level: rouge_2 = 3.24, 1.99, 2.29
+- Photo level: rouge_l = 24.33, 22.52, 19.54
+- Review level: rouge_l = 24.09, 22.24, 19.41
+
+
+Epoch: 7/20
+
+Rating prediction results: MAE=0.758, RMSE=0.974
+
+Review generation results:
+- Photo level: BLEU-scores = 31.16, 16.03, 11.85, 10.35
+- Review level: BLEU-scores = 38.84, 19.95, 14.27, 12.17
+- Photo level: rouge_1 = 36.46, 21.98, 25.75
+- Review level: rouge_1 = 36.27, 21.67, 25.53
+- Photo level: rouge_2 = 2.99, 1.85, 2.10
+- Review level: rouge_2 = 2.64, 1.59, 1.84
+- Photo level: rouge_l = 24.94, 20.44, 18.04
+- Review level: rouge_l = 24.81, 20.15, 17.89
+
+
+Epoch: 8/20
+
+Rating prediction results: MAE=0.767, RMSE=0.986
+
+Review generation results:
+- Photo level: BLEU-scores = 32.46, 16.87, 12.27, 10.55
+- Review level: BLEU-scores = 40.43, 21.00, 14.80, 12.39
+- Photo level: rouge_1 = 33.12, 23.01, 25.49
+- Review level: rouge_1 = 32.90, 22.75, 25.34
+- Photo level: rouge_2 = 2.91, 2.09, 2.24
+- Review level: rouge_2 = 2.54, 1.81, 1.97
+- Photo level: rouge_l = 24.28, 21.08, 18.55
+- Review level: rouge_l = 24.03, 20.83, 18.46
+
+
+Epoch: 9/20
+
+Rating prediction results: MAE=0.762, RMSE=0.983
+
+Review generation results:
+- Photo level: BLEU-scores = 26.46, 13.78, 10.01, 8.56
+- Review level: BLEU-scores = 32.40, 16.70, 11.65, 9.68
+- Photo level: rouge_1 = 29.81, 17.89, 21.12
+- Review level: rouge_1 = 29.86, 17.60, 21.00
+- Photo level: rouge_2 = 2.75, 1.71, 1.97
+- Review level: rouge_2 = 2.77, 1.65, 1.95
+- Photo level: rouge_l = 15.94, 17.42, 14.12
+- Review level: rouge_l = 15.98, 17.18, 14.17
+
+
+Epoch: 10/20
+
+Rating prediction results: MAE=0.765, RMSE=0.986
+
+Review generation results:
+- Photo level: BLEU-scores = 31.25, 16.23, 12.14, 10.68
+- Review level: BLEU-scores = 39.57, 20.46, 14.77, 12.68
+- Photo level: rouge_1 = 32.57, 21.14, 24.08
+- Review level: rouge_1 = 32.61, 20.92, 23.98
+- Photo level: rouge_2 = 2.48, 1.57, 1.77
+- Review level: rouge_2 = 2.29, 1.42, 1.62
+- Photo level: rouge_l = 25.05, 19.46, 17.88
+- Review level: rouge_l = 25.06, 19.25, 17.75
+
+
+Epoch: 11/20
+
+Rating prediction results: MAE=0.775, RMSE=1.000
+
+Review generation results:
+- Photo level: BLEU-scores = 27.35, 14.57, 11.05, 9.82
+- Review level: BLEU-scores = 34.82, 18.50, 13.61, 11.86
+- Photo level: rouge_1 = 33.02, 19.36, 22.71
+- Review level: rouge_1 = 33.03, 19.22, 22.65
+- Photo level: rouge_2 = 2.49, 1.58, 1.78
+- Review level: rouge_2 = 2.46, 1.47, 1.71
+- Photo level: rouge_l = 24.27, 18.19, 16.18
+- Review level: rouge_l = 24.31, 18.13, 16.22
+
+
+Epoch: 12/20
+
+Rating prediction results: MAE=0.772, RMSE=0.997
+
+Review generation results:
+- Photo level: BLEU-scores = 27.10, 14.54, 11.29, 10.18
+- Review level: BLEU-scores = 34.58, 18.45, 13.94, 12.35
+- Photo level: rouge_1 = 36.31, 18.62, 23.10
+- Review level: rouge_1 = 36.01, 18.24, 22.76
+- Photo level: rouge_2 = 2.56, 1.38, 1.66
+- Review level: rouge_2 = 2.37, 1.21, 1.47
+- Photo level: rouge_l = 26.30, 17.78, 16.63
+- Review level: rouge_l = 26.03, 17.51, 16.46
+
+
+Epoch: 13/20
+
+Rating prediction results: MAE=0.774, RMSE=1.006
+
+Review generation results:
+- Photo level: BLEU-scores = 28.44, 15.22, 11.64, 10.39
+- Review level: BLEU-scores = 36.66, 19.48, 14.41, 12.58
+- Photo level: rouge_1 = 34.96, 19.43, 23.30
+- Review level: rouge_1 = 35.03, 19.29, 23.30
+- Photo level: rouge_2 = 2.43, 1.48, 1.70
+- Review level: rouge_2 = 2.54, 1.45, 1.70
+- Photo level: rouge_l = 26.25, 18.24, 17.01
+- Review level: rouge_l = 26.12, 18.00, 16.94
+
+
+Epoch: 14/20
+
+Rating prediction results: MAE=0.766, RMSE=0.994
+
+Review generation results:
+- Photo level: BLEU-scores = 26.38, 14.55, 11.46, 10.41
+- Review level: BLEU-scores = 34.16, 18.70, 14.31, 12.77
+- Photo level: rouge_1 = 35.65, 17.63, 22.20
+- Review level: rouge_1 = 35.36, 17.24, 21.84
+- Photo level: rouge_2 = 2.47, 1.32, 1.60
+- Review level: rouge_2 = 2.18, 1.07, 1.34
+- Photo level: rouge_l = 27.10, 16.99, 16.48
+- Review level: rouge_l = 26.80, 16.61, 16.13
+
+
+Epoch: 15/20
+
+Rating prediction results: MAE=0.776, RMSE=1.002
+
+Review generation results:
+- Photo level: BLEU-scores = 25.40, 14.26, 11.39, 10.51
+- Review level: BLEU-scores = 33.64, 18.69, 14.53, 13.16
+- Photo level: rouge_1 = 35.84, 17.25, 21.85
+- Review level: rouge_1 = 36.15, 17.05, 21.73
+- Photo level: rouge_2 = 2.42, 1.22, 1.49
+- Review level: rouge_2 = 2.29, 1.07, 1.34
+- Photo level: rouge_l = 29.22, 16.30, 16.17
+- Review level: rouge_l = 29.21, 16.09, 15.99
+
+
+Epoch: 16/20
+
+Rating prediction results: MAE=0.769, RMSE=0.999
+
+Review generation results:
+- Photo level: BLEU-scores = 25.35, 13.93, 10.96, 10.01
+- Review level: BLEU-scores = 32.87, 17.88, 13.69, 12.29
+- Photo level: rouge_1 = 35.84, 17.45, 21.91
+- Review level: rouge_1 = 36.03, 17.25, 21.81
+- Photo level: rouge_2 = 2.31, 1.27, 1.50
+- Review level: rouge_2 = 2.18, 1.10, 1.31
+- Photo level: rouge_l = 27.04, 16.69, 15.84
+- Review level: rouge_l = 27.03, 16.46, 15.71
+
+
+Epoch: 17/20
+
+Rating prediction results: MAE=0.780, RMSE=1.012
+
+Review generation results:
+- Photo level: BLEU-scores = 26.41, 14.37, 11.26, 10.20
+- Review level: BLEU-scores = 33.86, 18.27, 13.88, 12.35
+- Photo level: rouge_1 = 35.12, 17.84, 22.13
+- Review level: rouge_1 = 35.40, 17.78, 22.22
+- Photo level: rouge_2 = 2.39, 1.32, 1.57
+- Review level: rouge_2 = 2.18, 1.18, 1.41
+- Photo level: rouge_l = 25.89, 17.01, 16.20
+- Review level: rouge_l = 26.02, 16.93, 16.29
+
+
+Epoch: 18/20
+
+Rating prediction results: MAE=0.773, RMSE=1.001
+
+Review generation results:
+- Photo level: BLEU-scores = 26.41, 14.32, 11.13, 10.03
+- Review level: BLEU-scores = 33.37, 17.95, 13.56, 12.00
+- Photo level: rouge_1 = 36.23, 18.08, 22.62
+- Review level: rouge_1 = 36.26, 17.78, 22.43
+- Photo level: rouge_2 = 2.54, 1.42, 1.69
+- Review level: rouge_2 = 2.42, 1.29, 1.54
+- Photo level: rouge_l = 24.29, 17.46, 16.16
+- Review level: rouge_l = 24.24, 17.15, 15.95
+
+
+Epoch: 19/20
+
+Rating prediction results: MAE=0.789, RMSE=1.028
+
+Review generation results:
+- Photo level: BLEU-scores = 27.14, 14.72, 11.45, 10.31
+- Review level: BLEU-scores = 34.46, 18.59, 14.06, 12.43
+- Photo level: rouge_1 = 37.10, 18.29, 23.00
+- Review level: rouge_1 = 36.79, 17.90, 22.62
+- Photo level: rouge_2 = 2.66, 1.43, 1.71
+- Review level: rouge_2 = 2.39, 1.25, 1.50
+- Photo level: rouge_l = 25.35, 17.59, 16.59
+- Review level: rouge_l = 25.16, 17.17, 16.24
+
+
+Epoch: 20/20
+
+Rating prediction results: MAE=0.776, RMSE=1.009
+
+Review generation results:
+- Photo level: BLEU-scores = 27.69, 14.98, 11.59, 10.39
+- Review level: BLEU-scores = 35.00, 18.84, 14.15, 12.43
+- Photo level: rouge_1 = 34.82, 18.36, 22.49
+- Review level: rouge_1 = 34.87, 18.24, 22.46
+- Photo level: rouge_2 = 2.64, 1.44, 1.72
+- Review level: rouge_2 = 2.43, 1.33, 1.59
+- Photo level: rouge_l = 24.23, 17.50, 16.43
+- Review level: rouge_l = 24.23, 17.32, 16.35
+
