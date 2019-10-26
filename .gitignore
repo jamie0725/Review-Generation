@@ -13,5 +13,5 @@ __pycache__
 *.h5
 *.ipynb
 mrg-gru/results/
-
 mrg/results/
+mrg-gru-attn/results/
