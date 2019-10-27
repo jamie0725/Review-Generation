@@ -13,8 +13,9 @@ def load_useritemfea(file, U_num, I_num):
 	overall_rating = np.zeros((U_num,I_num))
 	with open(file, 'r') as fin:
 		lines = fin.readlines()
-		for line in lines:
+		for i, line in enumerate(lines):
 			eachline = line.strip().split(',')
+			print(eachline)
 			ft_sent_pair = eachline[3].strip()
 			if ft_sent_pair != '':
 				u_idx = int(eachline[0])
@@ -37,6 +38,9 @@ def load_useritemfea(file, U_num, I_num):
 					#item_feature_mentioned[i_idx][f_idx] += 1
 				overall_rating[u_idx,i_idx] = over_rating
 				sps_tensor_useritemf[(u_idx,i_idx,F_num)] = over_rating
+
+			if i == 10000:
+				break
 	return overall_rating, sps_tensor_useritemf, useritem_ls
 
 
@@ -47,7 +51,7 @@ def load_useritemfeaword(file, F_num, W_num):
 	with open(file, 'r') as fin:
 		lines = fin.readlines()
 
-	for line in lines:
+	for i, line in enumerate(lines):
 		eachline = line.strip().split(',')
 		u_idx = int(eachline[0])
 		i_idx = int(eachline[1])
@@ -62,6 +66,9 @@ def load_useritemfeaword(file, F_num, W_num):
 		if (i_idx,f_idx,w_idx) not in sps_tensor_itemwordf:
 			sps_tensor_itemwordf[(i_idx,f_idx,w_idx)] = 0
 		sps_tensor_itemwordf[(i_idx,f_idx,w_idx)] += 1
+
+		if i == 1000:
+			break
 
 	return sps_tensor_userwordf, sps_tensor_itemwordf, feature_word_used 
 
@@ -121,7 +128,7 @@ if __name__ == '__main__':
 										 num_iter, num_processes, lr=lr, cost_function='abs', random_seed=0, eps=1e-8)	
 
 	params = {'G1': G1, 'G2': G2, 'G3': G3, 'U':U, 'I':I, 'F':F, 'W':W}
-	with open('../Results/' + outfile + '.paras','wb') as output:
+	with open('../Results/' + outfile + '-1.paras','wb') as output:
 		pickle.dump(params, output) 
 
 	fout_result.close()
