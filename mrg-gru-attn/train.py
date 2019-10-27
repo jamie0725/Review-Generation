@@ -21,7 +21,7 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 tf.flags.DEFINE_string("data_dir", "data",
                        """Path to the data directory""")
 
-tf.flags.DEFINE_float("learning_rate", 1e-4,
+tf.flags.DEFINE_float("learning_rate", 3e-4,
                       """Learning rate (default: 3e-4)""")
 tf.flags.DEFINE_float("dropout_rate", 0.2,
                       """Probability of dropping neurons (default: 0.2)""")
@@ -69,7 +69,7 @@ def train_fn(model):
     trainable_vars = tf.trainable_variables()
     count_parameters(trainable_vars)
 
-    optimizer = tf.compat.v1.train.AdamOptimizer(FLAGS.learning_rate)
+    optimizer = tf.compat.v1.train.AdamOptimizer(FLAGS.learning_rate, epsilon=1e-4)
 
     rating_l2_loss = tf.add_n([tf.nn.l2_loss(v) for v in trainable_vars
                                if check_scope_rating(v.name) and 'bias' not in v.name])
@@ -79,16 +79,19 @@ def train_fn(model):
                                if check_scope_review(v.name) and 'bias' not in v.name])
     model.review_loss = model.review_loss + FLAGS.lambda_reg * review_l2_loss
 
-    grad_rating = optimizer.compute_gradients(model.rating_loss)
-    grad_review = optimizer.compute_gradients(model.review_loss)
-    def ClipIfNotNone(grad):
-            if grad is None:
-                return grad
-            return tf.clip_by_value(grad, -1., 1.)
-    clipped_grad_rating = [(ClipIfNotNone(grad), var) for grad, var in grad_rating]
-    clipeed_grad_review = [(ClipIfNotNone(grad), var) for grad, var in grad_review]
-    update_rating = optimizer.apply_gradients(clipped_grad_rating, name='update_rating', global_step=global_step)
-    update_review = optimizer.apply_gradients(clipeed_grad_review, name='update_review')
+    # grad_rating = optimizer.compute_gradients(model.rating_loss)
+    # grad_review = optimizer.compute_gradients(model.review_loss)
+    # def ClipIfNotNone(grad):
+    #         if grad is None:
+    #             return grad
+    #         return tf.clip_by_value(grad, -1., 1.)
+    # clipped_grad_rating = [(ClipIfNotNone(grad), var) for grad, var in grad_rating]
+    # clipeed_grad_review = [(ClipIfNotNone(grad), var) for grad, var in grad_review]
+    # update_rating = optimizer.apply_gradients(clipped_grad_rating, name='update_rating', global_step=global_step)
+    # update_review = optimizer.apply_gradients(clipeed_grad_review, name='update_review')
+    update_rating = optimizer.minimize(
+        model.rating_loss, name='update_rating', global_step=global_step)
+    update_review = optimizer.minimize(model.review_loss, name='update_review')
 
     return update_rating, update_review, global_step
 

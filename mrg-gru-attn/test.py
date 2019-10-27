@@ -18,13 +18,13 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 # Parameters
 # ==================================================
-tf.flags.DEFINE_string("ckpt_dir", "results/model15.ckpt",
+tf.flags.DEFINE_string("ckpt_dir", "results/model20.ckpt",
                         """Path to the directory that contains the checkpoints""")
 
 tf.flags.DEFINE_string("data_dir", "data",
                        """Path to the data directory""")
 
-tf.flags.DEFINE_float("learning_rate", 1e-4,
+tf.flags.DEFINE_float("learning_rate", 3e-4,
                       """Learning rate (default: 3e-4)""")
 tf.flags.DEFINE_float("dropout_rate", 0.2,
                       """Probability of dropping neurons (default: 0.2)""")

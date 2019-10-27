@@ -1,12 +1,12 @@
 
-Rating prediction results: MAE=0.747, RMSE=0.989
+Rating prediction results: MAE=0.793, RMSE=0.995
 
 Review generation results:
-- Photo level: BLEU-scores = 32.05, 15.95, 11.80, 10.21
-- Review level: BLEU-scores = 39.71, 19.56, 13.97, 11.77
-- Photo level: rouge_1 = 34.42, 21.14, 24.84
-- Review level: rouge_1 = 34.75, 20.80, 24.74
-- Photo level: rouge_2 = 2.60, 1.53, 1.81
-- Review level: rouge_2 = 2.37, 1.41, 1.65
-- Photo level: rouge_l = 22.57, 20.08, 18.17
-- Review level: rouge_l = 22.69, 19.67, 18.07
+- Photo level: BLEU-scores = 35.20, 17.27, 12.84, 11.09
+- Review level: BLEU-scores = 44.29, 21.62, 15.55, 13.07
+- Photo level: rouge_1 = 31.82, 23.91, 25.84
+- Review level: rouge_1 = 32.04, 23.70, 25.83
+- Photo level: rouge_2 = 2.19, 1.53, 1.67
+- Review level: rouge_2 = 2.14, 1.47, 1.63
+- Photo level: rouge_l = 24.76, 20.81, 19.27
+- Review level: rouge_l = 24.80, 20.58, 19.22
